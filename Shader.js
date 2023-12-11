@@ -1,178 +1,763 @@
+var vertexColorProgramInfo;
+var solidColorProgramInfo;
+var gl;
+var sphereBufferInfo;
+var cameraBufferInfo;
+var clipspaceCubeBufferInfo;
+var slideSettings;
+
 export default class Shader {
   constructor() {
-    var canvas = document.getElementById("game-surface");
-    this.gl = canvas.getContext("webgl");
+    var canvas = document.getElementById("canvas");
+    gl = canvas.getContext("webgl");
 
-    if (!this.gl) {
+    if (!gl) {
       console.log("WebGL not supported, falling back on experimental-webgl");
       gl = canvas.getContext("experimental-webgl");
     }
 
-    if (!this.gl) {
+    if (!gl) {
       alert("Your browser does not support WebGL");
     }
 
-    // bring glsl text source, glsl 텍스트 소스 가져오기
-    var vertexShaderSource = document.getElementById("vertex-shader-2d").text;
-    var fragmentShaderSource =
-      document.getElementById("fragment-shader-2d").text;
+    vertexColorProgramInfo = webglUtils.createProgramInfo(gl, [
+      "vertex-shader-3d",
+      "fragment-shader-3d",
+    ]);
 
-    // create and compile shaders and check vaildations, 쉐이더 생성과 컴파일 검증까지
-    var vertexShader = this.createShader(
-      this.gl,
-      this.gl.VERTEX_SHADER,
-      vertexShaderSource
-    );
-    var fragmentShader = this.createShader(
-      this.gl,
-      this.gl.FRAGMENT_SHADER,
-      fragmentShaderSource
-    );
+    solidColorProgramInfo = webglUtils.createProgramInfo(gl, [
+      "solid-color-vertex-shader",
+      "solid-color-fragment-shader",
+    ]);
 
-    // make program, 프로그램 만들기
-    this.program = this.createProgram(this.gl, vertexShader, fragmentShader);
-
-    this.positionLocation = this.gl.getAttribLocation(
-      this.program,
-      "a_position"
-    );
-    this.colorLocation = this.gl.getAttribLocation(this.program, "a_color");
-    this.matrixLocation = this.gl.getUniformLocation(this.program, "u_matrix");
-
-    this.positionBuffer = this.gl.createBuffer();
-    this.colorBuffer = this.gl.createBuffer();
+    sphereBufferInfo = this.createSphereBufferInfo(5);
+    cameraBufferInfo = this.createCameraBufferInfo(gl, 10);
+    clipspaceCubeBufferInfo = this.createClipspaceCubeBufferInfo(gl);
   }
 
-  createShader(gl, type, source) {
-    var shader = gl.createShader(type);
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-
-    var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-    if (success) {
-      return shader;
+  createSphereBufferInfo(radius = 10) {
+    var x, y, z, xy; // vertex position
+    var positions = [];
+    var stackCount = 10;
+    var sectorCount = 10;
+    var sectorStep = (2 * Math.PI) / sectorCount;
+    var stackStep = Math.PI / stackCount;
+    var sectorAngle, stackAngle;
+    for (var i = 0; i <= stackCount; ++i) {
+      stackAngle = Math.PI / 2 - i * stackStep; // st
+      xy = radius * Math.cos(stackAngle); // r * cos(
+      z = radius * Math.sin(stackAngle); // r * sin(u
+      // add (sectorCount+1) vertices per stack
+      // first and last vertices have same position a
+      for (var j = 0; j <= sectorCount; ++j) {
+        sectorAngle = j * sectorStep; // starting fro
+        // vertex position (x, y, z)
+        x = xy * Math.cos(sectorAngle); // r * cos(u)
+        y = xy * Math.sin(sectorAngle); // r * cos(u)
+        positions.push(x);
+        positions.push(y);
+        positions.push(z);
+      }
     }
-
-    console.log(gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
-  }
-
-  createProgram(gl, vertexShader, fragmentShader) {
-    var program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error("ERROR linking program", gl.getProgramInfoLog(program));
-      return;
+    var indices = [];
+    var k1, k2;
+    for (var i = 0; i <= stackCount; ++i) {
+      k1 = i * (sectorCount + 1); // beginning of cur
+      k2 = k1 + sectorCount + 1; // beginning of next
+      for (var j = 0; j <= sectorCount; ++j, ++k1, ++k2) {
+        // 2 triangles per sector excluding first and
+        // k1 => k2 => k1+1
+        if (i != 0) {
+          indices.push(k1);
+          indices.push(k2);
+          indices.push(k1 + 1);
+        }
+        // k1+1 => k2 => k2+1
+        if (i != stackCount - 1) {
+          indices.push(k1 + 1);
+          indices.push(k2);
+          indices.push(k2 + 1);
+        }
+      }
     }
-
-    gl.validateProgram(program);
-    if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
-      console.error("ERROR validating program", gl.getProgramInfoLog(program));
-      return;
+    var color = [
+      Math.round(Math.random() * 255),
+      Math.round(Math.random() * 255),
+      Math.round(Math.random() * 255),
+    ];
+    var colors = [];
+    for (var i = 0; i <= indices.length / 3; i++) {
+      colors.push(color[0] * i);
+      colors.push(color[1] * i);
+      colors.push(color[2] * 1);
     }
-
-    gl.useProgram(program);
-    return program;
+    return webglUtils.createBufferInfoFromArrays(gl, {
+      position: { numComponents: 3, data: positions, type: Float32Array },
+      color: { numComponents: 3, data: colors, type: Uint8Array },
+      indices,
+    });
   }
 
-  setPositionBuffer(vertices) {
-    // create and bind buffer, and add buffer data, 버퍼 생성 바인드 및 데이터 구성
-    this.vertices = vertices;
-    this.verticesSize = vertices.length;
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
-    this.gl.bufferData(
-      this.gl.ARRAY_BUFFER,
-      new Float32Array(vertices),
-      this.gl.STATIC_DRAW
-    );
-  }
+  createCameraBufferInfo(gl, scale = 1) {
+    const positions = [
+      -1,
+      -1,
+      1, // cube vertices
+      1,
+      -1,
+      1,
+      -1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      -1,
+      -1,
+      3,
+      1,
+      -1,
+      3,
+      -1,
+      1,
+      3,
+      1,
+      1,
+      3,
+      0,
+      0,
+      1, // cone tip
+    ];
 
-  setColorBuffer(color) {
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorBuffer);
+    const indices = [
+      0,
+      1,
+      1,
+      3,
+      3,
+      2,
+      2,
+      0, // cube indices
+      4,
+      5,
+      5,
+      7,
+      7,
+      6,
+      6,
+      4,
+      0,
+      4,
+      1,
+      5,
+      3,
+      7,
+      2,
+      6,
+    ];
 
-    var colorArray = [];
-    for (var i = 0; i <= this.verticesSize / 6; i++) {
-      colorArray.push((color[0] * i) % 255);
-      colorArray.push((color[1] * i) % 255);
-      colorArray.push((color[2] * i) % 255);
-      colorArray.push((color[0] * i) % 255);
-      colorArray.push((color[1] * i) % 255);
-      colorArray.push((color[2] * i) % 255);
+    const numSegments = 6;
+    const coneBaseIndex = positions.length / 3;
+    const coneTipIndex = coneBaseIndex - 1;
+    for (let i = 0; i < numSegments; i++) {
+      const u = i / numSegments;
+      const angle = u * Math.PI * 2;
+      const x = Math.cos(angle);
+      const y = Math.sin(angle);
+      positions.push(x, y, 0);
+      indices.push(coneTipIndex, coneBaseIndex + i);
+      indices.push(coneBaseIndex + i, coneBaseIndex + ((i + 1) % numSegments));
     }
-
-    this.gl.bufferData(
-      this.gl.ARRAY_BUFFER,
-      new Uint8Array(colorArray),
-      this.gl.STATIC_DRAW
-    );
+    positions.forEach((v, ndx) => {
+      positions[ndx] *= scale;
+    });
+    return webglUtils.createBufferInfoFromArrays(gl, {
+      position: positions,
+      indices,
+    });
   }
 
-  readyToDraw() {
-    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-    this.gl.enable(this.gl.DEPTH_TEST);
-    this.gl.enable(this.gl.CULL_FACE);
-
-    this.gl.useProgram(this.program);
-
-    this.gl.enableVertexAttribArray(this.positionLocation);
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
-
-    // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
-    var size = 3; // 2 components per iteration
-    var type = this.gl.FLOAT; // the data is 32bit floats
-    var normalize = false; // don't normalize the data
-    var stride = 0; // 0 = move forward size * sizeof(type) each iteration to get the next position
-    var offset = 0; // start at the beginning of the buffer
-    this.gl.vertexAttribPointer(
-      this.positionLocation,
-      size,
-      type,
-      normalize,
-      stride,
-      offset
-    );
-
-    this.gl.enableVertexAttribArray(this.colorLocation);
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorBuffer);
-
-    var colorSize = 3;
-    var colorType = this.gl.UNSIGNED_BYTE;
-    var colorNormalize = true;
-    var colorStride = 0;
-    var colorOffset = 0;
-    this.gl.vertexAttribPointer(
-      this.colorLocation,
-      colorSize,
-      colorType,
-      colorNormalize,
-      colorStride,
-      colorOffset
-    );
+  createClipspaceCubeBufferInfo(gl) {
+    // first let's add a cube. It goes from 1 to 3
+    // because cameras look down -Z so we want
+    // the camera to start at Z = 0. We'll put a
+    // a cone in front of this cube opening
+    // toward -Z
+    const positions = [
+      -1,
+      -1,
+      -1, // cube vertices
+      1,
+      -1,
+      -1,
+      -1,
+      1,
+      -1,
+      1,
+      1,
+      -1,
+      -1,
+      -1,
+      1,
+      1,
+      -1,
+      1,
+      -1,
+      1,
+      1,
+      1,
+      1,
+      1,
+    ];
+    const indices = [
+      0,
+      1,
+      1,
+      3,
+      3,
+      2,
+      2,
+      0, // cube indices
+      4,
+      5,
+      5,
+      7,
+      7,
+      6,
+      6,
+      4,
+      0,
+      4,
+      1,
+      5,
+      3,
+      7,
+      2,
+      6,
+    ];
+    return webglUtils.createBufferInfoFromArrays(gl, {
+      position: positions,
+      indices,
+    });
   }
 
-  draw(color, positionX, positionY, positionZ) {
-    this.setColorBuffer(color);
+  setSlide() {
+    slideSettings = {
+      rotation: 0, // in degrees
+      cam1FieldOfView: 127, // in degrees
+      cam1PosX: -292,
+      cam1PosY: 65,
+      cam1PosZ: -261,
+      cam1Near: 23,
+      cam1Far: 500,
+      cam1Ortho: false,
+      cam1OrthoUnits: 120,
+    };
+    webglLessonsUI.setupUI(document.querySelector("#ui"), slideSettings, [
+      {
+        type: "slider",
+        key: "rotation",
+        min: 0,
+        max: 360,
+        change: this.render,
+        precision: 2,
+        step: 0.001,
+      },
+      {
+        type: "slider",
+        key: "cam1FieldOfView",
+        min: 1,
+        max: 170,
+        change: this.render,
+      },
+      {
+        type: "slider",
+        key: "cam1PosX",
+        min: -600,
+        max: 600,
+        change: this.render,
+      },
+      {
+        type: "slider",
+        key: "cam1PosY",
+        min: -200,
+        max: 200,
+        change: this.render,
+      },
+      {
+        type: "slider",
+        key: "cam1PosZ",
+        min: -500,
+        max: 500,
+        change: this.render,
+      },
+      {
+        type: "slider",
+        key: "cam1Near",
+        min: 1,
+        max: 500,
+        change: this.render,
+      },
+      {
+        type: "slider",
+        key: "cam1Far",
+        min: 1,
+        max: 500,
+        change: this.render,
+      },
+      { type: "checkbox", key: "cam1Ortho", change: this.render },
+      {
+        type: "slider",
+        key: "cam1OrthoUnits",
+        min: 1,
+        max: 150,
+        change: this.render,
+      },
+    ]);
+  }
 
-    var matrix = m4.projection(
-      this.gl.canvas.clientWidth,
-      this.gl.canvas.clientHeight,
-      1000
+  render() {
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+
+    gl.enable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.SCISSOR_TEST);
+
+    ///////////////////////////////////////////////////////
+    // first view
+    ///////////////////////////////////////////////////////
+    const effectiveWidth = gl.canvas.clientWidth / 2;
+    const aspect = effectiveWidth / gl.canvas.clientHeight;
+    const near = 1;
+    const far = 2000;
+
+    const perspectiveProjectionMatirx = slideSettings.cam1Ortho
+      ? m4.orthographic(
+          -slideSettings.cam1OrthoUnits * aspect,
+          slideSettings.cam1OrthoUnits * aspect,
+          -slideSettings.cam1OrthoUnits,
+          slideSettings.cam1OrthoUnits,
+          slideSettings.cam1Near,
+          slideSettings.cam1Far
+        )
+      : m4.perspective(
+          degToRad(slideSettings.cam1FieldOfView),
+          aspect,
+          slideSettings.cam1Near,
+          slideSettings.cam1Far
+        );
+
+    const cameraPosition = [
+      slideSettings.cam1PosX,
+      slideSettings.cam1PosY,
+      slideSettings.cam1PosZ,
+    ];
+
+    const target = [-270, 0, 0];
+    const up = [0, 1, 0];
+    const cameraMatrix = m4.lookAt(cameraPosition, target, up);
+
+    let worldMatrix = m4.yRotation(degToRad(slideSettings.rotation));
+    worldMatrix = m4.xRotate(worldMatrix, degToRad(slideSettings.rotation));
+    //worldMatrix = m4.translate(worldMatrix, -35, 75, -5);
+
+    const { width, height } = gl.canvas;
+    const leftWidth = (width / 2) | 0;
+
+    // draw on the left with orthographic camera
+    //gl.viewport(0, 0, leftWidth, height);
+    //gl.scissor(0, 0, leftWidth, height);
+    gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
+    gl.clearColor(0, 0, 0, 1);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    var tempPositions = [
+      //i
+      [85, 50],
+      [95, 50],
+      [105, 50],
+      [115, 50],
+      [125, 50],
+      [105, 40],
+      [105, 30],
+      [105, 20],
+      [105, 10],
+      [105, 0],
+      [105, -10],
+      [105, -20],
+      [105, -30],
+      [105, -40],
+      [85, -50],
+      [95, -50],
+      [105, -50],
+      [115, -50],
+      [125, -50],
+
+      //a
+      [35, 50],
+      [45, 40],
+      [25, 40],
+      [55, 30],
+      [15, 30],
+      [55, 20],
+      [15, 20],
+      [55, 10],
+      [15, 10],
+      [55, 0],
+      [15, 0],
+      [45, 0],
+      [35, 0],
+      [25, 0],
+      [55, -10],
+      [15, -10],
+      [55, -20],
+      [15, -20],
+      [55, -30],
+      [15, -30],
+      [55, -40],
+      [15, -40],
+      [55, -50],
+      [15, -50],
+
+      //m
+      [-45, 50],
+      [-45, 40],
+      [-45, 30],
+      [-45, 20],
+      [-45, 10],
+      [-45, 0],
+      [-45, -50],
+      [-45, -40],
+      [-45, -30],
+      [-45, -20],
+      [-45, -10],
+      [-45, 50],
+      [-5, 50],
+      [-5, 40],
+      [-5, 30],
+      [-5, 20],
+      [-5, 10],
+      [-5, 0],
+      [-5, -50],
+      [-5, -40],
+      [-5, -30],
+      [-5, -20],
+      [-5, -10],
+      [-15, 40],
+      [-35, 40],
+      [-25, 0],
+      [-25, 10],
+      [-25, 20],
+      [-25, 30],
+
+      //s
+      [-95, 50],
+      [-85, 40],
+      [-105, 40],
+      [-75, 30],
+      [-115, 30],
+      [-75, 20],
+      [-85, 10],
+      [-95, 0],
+      [-105, 0],
+      [-115, -10],
+      [-115, -20],
+      [-115, -30],
+      [-105, -40],
+      [-95, -50],
+      [-85, -40],
+      [-75, -30],
+
+      //0
+      [-155, 50],
+      [-145, 40],
+      [-165, 40],
+      [-135, 30],
+      [-135, 20],
+      [-135, 10],
+      [-135, 0],
+      [-135, -10],
+      [-135, -20],
+      [-135, -30],
+      [-175, 30],
+      [-175, 20],
+      [-175, 10],
+      [-175, 0],
+      [-175, -10],
+      [-175, -20],
+      [-175, -30],
+      [-145, -40],
+      [-165, -40],
+      [-155, -50],
+
+      //m
+      [-195, 50],
+      [-195, 40],
+      [-195, 30],
+      [-195, 20],
+      [-195, 10],
+      [-195, 0],
+      [-195, -50],
+      [-195, -40],
+      [-195, -30],
+      [-195, -20],
+      [-195, -10],
+      [-195, 50],
+      [-235, 50],
+      [-235, 40],
+      [-235, 30],
+      [-235, 20],
+      [-235, 10],
+      [-235, 0],
+      [-235, -50],
+      [-235, -40],
+      [-235, -30],
+      [-235, -20],
+      [-235, -10],
+      [-225, 40],
+      [-205, 40],
+      [-215, 0],
+      [-215, 10],
+      [-215, 20],
+      [-215, 30],
+
+      //e
+      //[-255, 50],
+      [-265, 50],
+      [-275, 50],
+      [-285, 50],
+      [-295, 50],
+      [-255, 40],
+      [-255, 30],
+      [-255, 20],
+      [-255, 10],
+      [-255, 0],
+      [-265, 0],
+      [-275, 0],
+      [-285, 0],
+      //[-295, 0],
+      //[-255, -50],
+      [-265, -50],
+      [-275, -50],
+      [-285, -50],
+      [-295, -50],
+      [-255, -40],
+      [-255, -30],
+      [-255, -20],
+      [-255, -10],
+      [-235, 0],
+
+      //t
+      [-315, 50],
+      [-325, 50],
+      [-335, 50],
+      [-345, 50],
+      [-355, 50],
+      [-335, 40],
+      [-335, 30],
+      [-335, 20],
+      [-335, 10],
+      [-335, 0],
+      [-335, -10],
+      [-335, -20],
+      [-335, -30],
+      [-335, -40],
+      [-335, -50],
+
+      //h
+      [-375, 50],
+      [-375, 40],
+      [-375, 30],
+      [-375, 20],
+      [-375, 10],
+      [-375, 0],
+      [-375, -10],
+      [-375, -20],
+      [-375, -30],
+      [-375, -40],
+      [-375, -50],
+      [-415, 50],
+      [-415, 40],
+      [-415, 30],
+      [-415, 20],
+      [-415, 10],
+      [-415, 0],
+      [-415, -10],
+      [-415, -20],
+      [-415, -30],
+      [-415, -40],
+      [-415, -50],
+      [-385, 0],
+      [-395, 0],
+      [-405, 0],
+
+      //i
+      [-435, 50],
+      [-445, 50],
+      [-455, 50],
+      [-465, 50],
+      [-475, 50],
+      [-455, 40],
+      [-455, 30],
+      [-455, 20],
+      [-455, 10],
+      [-455, 0],
+      [-455, -10],
+      [-455, -20],
+      [-455, -30],
+      [-455, -40],
+      [-435, -50],
+      [-445, -50],
+      [-455, -50],
+      [-465, -50],
+      [-475, -50],
+
+      //n
+      [-495, 50],
+      [-495, 40],
+      [-495, 30],
+      [-495, 20],
+      [-495, 10],
+      [-495, 0],
+      [-495, -10],
+      [-495, -20],
+      [-495, -30],
+      [-495, -40],
+      [-495, -50],
+      [-535, 50],
+      [-535, 40],
+      [-535, 30],
+      [-535, 20],
+      [-535, 10],
+      [-535, 0],
+      [-535, -10],
+      [-535, -20],
+      [-535, -30],
+      [-535, -40],
+      [-535, -50],
+      [-505, 0],
+      [-515, -10],
+      [-525, -20],
+
+      //0
+      [-575, 50],
+      [-565, 40],
+      [-585, 40],
+      [-555, 30],
+      [-555, 20],
+      [-555, 10],
+      [-555, 0],
+      [-585, 0],
+      [-555, -10],
+      [-555, -20],
+      [-555, -30],
+      [-565, -40],
+      [-575, -50],
+      [-595, -50],
+      [-585, -40],
+      [-595, -40],
+      [-595, -30],
+      [-595, -20],
+      [-595, -10],
+      [-595, 0],
+      [-155, -50],
+    ];
+
+    tempPositions.forEach((element) => {
+      for (var i = 1; i < 6; i++) {
+        var tempMat = m4.translate(
+          worldMatrix,
+          element[0],
+          element[1],
+          -5 + i * -10
+        );
+        drawScene(perspectiveProjectionMatirx, cameraMatrix, tempMat);
+      }
+
+      //var tempMat = m4.translate(worldMatrix, element[0], element[1], -5);
+      //drawScene(perspectiveProjectionMatirx, cameraMatrix, tempMat);
+    });
+
+    ///////////////////////////////////////////////////////
+    // end first view
+    ///////////////////////////////////////////////////////
+
+    /*
+    ///////////////////////////////////////////////////////
+    // second view
+    ///////////////////////////////////////////////////////
+    const rightWidth = width - leftWidth;
+    gl.viewport(leftWidth, 0, rightWidth, height);
+    gl.scissor(leftWidth, 0, rightWidth, height);
+    gl.clearColor(0.8, 0.8, 1, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    const perspectiveProjectionMatirx2 = m4.perspective(
+      degToRad(60),
+      aspect,
+      near,
+      far
     );
-    matrix = m4.translate(matrix, positionX, positionY, positionZ);
-    matrix = m4.xRotate(matrix, degreesToRadians(80));
-    matrix = m4.yRotate(matrix, degreesToRadians(20));
-    matrix = m4.zRotate(matrix, 0);
-    matrix = m4.scale(matrix, 1, 1, 1);
 
-    this.gl.uniformMatrix4fv(this.matrixLocation, false, matrix);
+    const cameraPosition2 = [-600, 400, -400];
+    const target2 = [0, 0, 0];
+    const cameraMatrix2 = m4.lookAt(cameraPosition2, target2, up);
 
-    var primitiveType = this.gl.TRIANGLES;
-    var offset = 0;
-    var count = this.verticesSize;
-    this.gl.drawArrays(primitiveType, offset, count);
+    tempPositions.forEach((element) => {
+      var tempMat = m4.translate(worldMatrix, element[0], element[1], -5);
+      drawScene(perspectiveProjectionMatirx2, cameraMatrix2, tempMat);
+    });
+    ///////////////////////////////////////////////////////
+    // end second view
+    ///////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////
+    // draw camera and clip space
+    ///////////////////////////////////////////////////////
+    {
+      const viewMatrix = m4.inverse(cameraMatrix2);
+      let mat = m4.multiply(perspectiveProjectionMatirx2, viewMatrix);
+      mat = m4.multiply(mat, cameraMatrix);
+      gl.useProgram(solidColorProgramInfo.program);
+
+      webglUtils.setBuffersAndAttributes(
+        gl,
+        solidColorProgramInfo,
+        cameraBufferInfo
+      );
+      webglUtils.setUniforms(solidColorProgramInfo, {
+        u_matrix: mat,
+        u_color: [0, 0, 0, 1],
+      });
+      webglUtils.drawBufferInfo(gl, cameraBufferInfo, gl.LINES);
+
+      mat = m4.multiply(mat, m4.inverse(perspectiveProjectionMatirx));
+      webglUtils.setBuffersAndAttributes(
+        gl,
+        solidColorProgramInfo,
+        clipspaceCubeBufferInfo
+      );
+      webglUtils.setUniforms(solidColorProgramInfo, {
+        u_matrix: mat,
+        u_color: [0, 0, 0, 1],
+      });
+      webglUtils.drawBufferInfo(gl, clipspaceCubeBufferInfo, gl.LINES);
+    }*/
+
+    function drawScene(projectionMatrix, cameraMatrix, worldMatrix) {
+      const viewMatrix = m4.inverse(cameraMatrix);
+      let mat = m4.multiply(projectionMatrix, viewMatrix);
+      mat = m4.multiply(mat, worldMatrix);
+      gl.useProgram(vertexColorProgramInfo.program);
+      webglUtils.setBuffersAndAttributes(
+        gl,
+        vertexColorProgramInfo,
+        sphereBufferInfo
+      );
+      webglUtils.setUniforms(vertexColorProgramInfo, { u_matrix: mat });
+      webglUtils.drawBufferInfo(gl, sphereBufferInfo);
+    }
   }
 }
 
@@ -326,6 +911,29 @@ var m4 = {
       near * far * rangeInv * 2,
       0,
     ];
+  },
+
+  orthographic: function (left, right, bottom, top, near, far, dst) {
+    dst = dst || new Float32Array(16);
+
+    dst[0] = 2 / (right - left);
+    dst[1] = 0;
+    dst[2] = 0;
+    dst[3] = 0;
+    dst[4] = 0;
+    dst[5] = 2 / (top - bottom);
+    dst[6] = 0;
+    dst[7] = 0;
+    dst[8] = 0;
+    dst[9] = 0;
+    dst[10] = 2 / (near - far);
+    dst[11] = 0;
+    dst[12] = (left + right) / (left - right);
+    dst[13] = (bottom + top) / (bottom - top);
+    dst[14] = (near + far) / (near - far);
+    dst[15] = 1;
+
+    return dst;
   },
 
   multiply: function (a, b) {
@@ -578,6 +1186,6 @@ var m4 = {
   },
 };
 
-function degreesToRadians(degree) {
+function degToRad(degree) {
   return (degree * Math.PI) / 180;
 }
