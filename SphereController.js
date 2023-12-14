@@ -1,7 +1,9 @@
 // export default SphereControler;
 import SphereShader from "./SphereShader.js";
 import Sphere from "./Sphere.js";
+import PhysicalEngine from "./PhysicalEngine.js";
 let shader = new SphereShader();
+let physicalE = new PhysicalEngine(1 / 10, -500);
 let spheres = [];
 
 export default class SphereController {
@@ -11,13 +13,41 @@ export default class SphereController {
     this.getBufferIndices(bufferInfoPositions, bufferInfoIndices);
     shader.addSphereBufferInfo(bufferInfoPositions, bufferInfoIndices);
 
-    let color = [150, 50, 0, 1];
-    //console.log(tempPositions[0]);
-    tempPositions.forEach((element) => {
-      for (var i = 1; i < 6; i++) {
-        let tempPos = [element[0], element[1], -5 + i * -10];
-        spheres.push(new Sphere(tempPos, color));
-      }
+    let wordArrays = [];
+    wordArrays.push(word_1);
+    wordArrays.push(word_2);
+    wordArrays.push(word_3);
+    wordArrays.push(word_4);
+    wordArrays.push(word_5);
+    wordArrays.push(word_6);
+    wordArrays.push(word_7);
+    wordArrays.push(word_8);
+    wordArrays.push(word_9);
+    wordArrays.push(word_10);
+    wordArrays.push(word_11);
+    wordArrays.push(word_12);
+
+    var variation = 0.07;
+
+    wordArrays.forEach((array) => {
+      var tempColor = [
+        Math.random() + variation * 5,
+        Math.random() + variation * 5,
+        Math.random() + variation * 5,
+        1,
+      ];
+      array.forEach((element) => {
+        for (var i = 5; i > 0; i--) {
+          var color = [
+            tempColor[0] - variation * i,
+            tempColor[1] - variation * i,
+            tempColor[2] - variation * i,
+            1,
+          ];
+          let tempPos = [element[0], element[1], -5 + i * 10];
+          spheres.push(new Sphere(tempPos, color));
+        }
+      });
     });
 
     this.setSlide();
@@ -149,35 +179,20 @@ export default class SphereController {
     }
   }
 
-  setColorBuffer(colors) {
-    var color = [
-      Math.round(Math.random() * 255),
-      Math.round(Math.random() * 255),
-      Math.round(Math.random() * 255),
-    ];
-    var colors = [];
-    for (var i = 0; i <= indices.length / 3; i++) {
-      colors.push(color[0] * i);
-      colors.push(color[1] * i);
-      colors.push(color[2] * 1);
-    }
-  }
-
   drawScene() {
-    //shader.setSlide();
-    //shader.setSlide(this.drawScene());
     shader.beforeDraw();
-    //console.log("ddd");
 
     spheres.forEach((element) => {
+      if (element.verticalMovement.state == 0) {
+        element.verticalMovement.state = 2;
+      }
+      physicalE.moveVertically(element);
       shader.drawScene(element.position, element.color);
     });
-
-    // shader.drawCamera();
   }
 }
 
-var tempPositions = [
+var word_1 = [
   //i
   [85, 50],
   [95, 50],
@@ -198,7 +213,9 @@ var tempPositions = [
   [105, -50],
   [115, -50],
   [125, -50],
+];
 
+var word_2 = [
   //a
   [35, 50],
   [45, 40],
@@ -224,6 +241,9 @@ var tempPositions = [
   [15, -40],
   [55, -50],
   [15, -50],
+];
+
+var word_3 = [
   //m
   [-45, 50],
   [-45, 40],
@@ -254,6 +274,9 @@ var tempPositions = [
   [-25, 10],
   [-25, 20],
   [-25, 30],
+];
+
+var word_4 = [
   //s
   [-95, 50],
   [-85, 40],
@@ -271,6 +294,9 @@ var tempPositions = [
   [-95, -50],
   [-85, -40],
   [-75, -30],
+];
+
+var word_5 = [
   //0
   [-155, 50],
   [-145, 40],
@@ -292,6 +318,9 @@ var tempPositions = [
   [-145, -40],
   [-165, -40],
   [-155, -50],
+];
+
+var word_6 = [
   //m
   [-195, 50],
   [-195, 40],
@@ -322,6 +351,9 @@ var tempPositions = [
   [-215, 10],
   [-215, 20],
   [-215, 30],
+];
+
+var word_7 = [
   //e
   [-255, 50],
   [-265, 50],
@@ -347,6 +379,9 @@ var tempPositions = [
   [-255, -20],
   [-255, -10],
   [-235, 0],
+];
+
+var word_8 = [
   //t
   [-315, 50],
   [-325, 50],
@@ -363,6 +398,9 @@ var tempPositions = [
   [-335, -30],
   [-335, -40],
   [-335, -50],
+];
+
+var word_9 = [
   //h
   [-375, 50],
   [-375, 40],
@@ -389,6 +427,9 @@ var tempPositions = [
   [-385, 0],
   [-395, 0],
   [-405, 0],
+];
+
+var word_10 = [
   //i
   [-435, 50],
   [-445, 50],
@@ -409,6 +450,9 @@ var tempPositions = [
   [-455, -50],
   [-465, -50],
   [-475, -50],
+];
+
+var word_11 = [
   //n
   [-495, 50],
   [-495, 40],
@@ -435,7 +479,10 @@ var tempPositions = [
   [-505, 0],
   [-515, -10],
   [-525, -20],
-  //0
+];
+
+var word_12 = [
+  //g
   [-575, 50],
   [-565, 40],
   [-585, 40],

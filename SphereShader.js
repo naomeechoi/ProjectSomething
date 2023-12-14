@@ -95,7 +95,6 @@ export default class SphereShader {
     const viewMatrix = m4.inverse(cameraMatrix);
     let mat = m4.multiply(perspectiveProjectionMatirx, viewMatrix);
 
-    console.log(worldMatrix);
     let tempMat = m4.translate(
       worldMatrix,
       position[0],
@@ -103,7 +102,6 @@ export default class SphereShader {
       position[2]
     );
 
-    //console.log(mat);
     mat = m4.multiply(mat, tempMat);
     gl.useProgram(vertexColorProgramInfo.program);
     webglUtils.setBuffersAndAttributes(

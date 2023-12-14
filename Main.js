@@ -1,4 +1,5 @@
 import SphereController from "./SphereController.js";
+let sphereController = new SphereController();
 
 window.onload = function () {
   console.log("This is working");
@@ -6,6 +7,10 @@ window.onload = function () {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  this.sphereController = new SphereController();
-  this.sphereController.drawScene();
+  update();
 };
+
+function update() {
+  sphereController.drawScene();
+  window.requestAnimationFrame(update);
+}
