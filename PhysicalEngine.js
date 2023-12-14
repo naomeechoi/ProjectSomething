@@ -21,7 +21,6 @@ export default class PhysicalEngine {
     const DOWN = 2;
     const FINISHED = 3;
     if (sphere.verticalMovement.state == DOWN) {
-      console.log(sphere.position[1]);
       if (sphere.position[1] - this.bottom > 0.03) {
         this.fallWithGravity(sphere);
       } else {

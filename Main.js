@@ -7,6 +7,11 @@ window.onload = function () {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
+  addEventListener("wheel", (event) => {
+    //console.log(event);
+    sphereController.check();
+  });
+
   update();
 };
 

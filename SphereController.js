@@ -5,6 +5,7 @@ import PhysicalEngine from "./PhysicalEngine.js";
 let shader = new SphereShader();
 let physicalE = new PhysicalEngine(1 / 10, -500);
 let spheres = [];
+let testWheel = -1;
 
 export default class SphereController {
   constructor() {
@@ -27,7 +28,7 @@ export default class SphereController {
     wordArrays.push(word_11);
     wordArrays.push(word_12);
 
-    var variation = 0.07;
+    var variation = 0.05;
 
     wordArrays.forEach((array) => {
       var tempColor = [
@@ -183,12 +184,16 @@ export default class SphereController {
     shader.beforeDraw();
 
     spheres.forEach((element) => {
-      if (element.verticalMovement.state == 0) {
+      if (testWheel == element.floor && element.verticalMovement.state == 0) {
         element.verticalMovement.state = 2;
       }
       physicalE.moveVertically(element);
       shader.drawScene(element.position, element.color);
     });
+  }
+
+  check() {
+    testWheel++;
   }
 }
 

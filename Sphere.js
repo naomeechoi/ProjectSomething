@@ -1,5 +1,5 @@
 export default class Sphere {
-  constructor(_position, _color, _restitution = 0.7) {
+  constructor(_position, _color, _restitution = Math.random()) {
     this.position = _position;
     this.color = _color;
     this.floor = this.getFloor();
