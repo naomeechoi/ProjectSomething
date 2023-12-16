@@ -10,6 +10,7 @@ export default class Sphere {
       restitution: _restitution,
       state: 0, // 0 is Noting, 1 is going up, 2 is going down
       speed: 0,
+      firstMoveDown: true,
     };
   }
 

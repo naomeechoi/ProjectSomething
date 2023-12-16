@@ -3,7 +3,7 @@ import SphereShader from "./SphereShader.js";
 import Sphere from "./Sphere.js";
 import PhysicalEngine from "./PhysicalEngine.js";
 let shader = new SphereShader();
-let physicalE = new PhysicalEngine(1 / 60, -500);
+let physicalE = new PhysicalEngine(1 / 60, -1000);
 let spheres = [];
 let testWheel = -1;
 
@@ -28,23 +28,24 @@ export default class SphereController {
     wordArrays.push(word_11);
     wordArrays.push(word_12);
 
-    var variation = 0.05;
+    var variation = 0.07;
 
     wordArrays.forEach((array) => {
-      var tempColor = [
+      let tempColor = [
         Math.random() + variation * 5,
         Math.random() + variation * 5,
         Math.random() + variation * 5,
         1,
       ];
       array.forEach((element) => {
-        for (var i = 5; i > 0; i--) {
-          var color = [
+        for (let i = 5; i > 0; i--) {
+          let color = [
             tempColor[0] - variation * i,
             tempColor[1] - variation * i,
             tempColor[2] - variation * i,
             1,
           ];
+
           let tempPos = [element[0], element[1], -5 + i * 10];
           spheres.push(new Sphere(tempPos, color));
         }
@@ -57,12 +58,12 @@ export default class SphereController {
   setSlide() {
     shader.slideSettings = {
       rotation: 0, // in degrees
-      cam1FieldOfView: 127, // in degrees
-      cam1PosX: -292,
-      cam1PosY: 65,
-      cam1PosZ: -261,
+      cam1FieldOfView: 100, // in degrees
+      cam1PosX: -310,
+      cam1PosY: 115,
+      cam1PosZ: -264,
       cam1Near: 23,
-      cam1Far: 500,
+      cam1Far: 2000,
       cam1Ortho: false,
       cam1OrthoUnits: 120,
     };
@@ -383,7 +384,6 @@ var word_7 = [
   [-255, -30],
   [-255, -20],
   [-255, -10],
-  [-235, 0],
 ];
 
 var word_8 = [
@@ -508,5 +508,4 @@ var word_12 = [
   [-595, -20],
   [-595, -10],
   [-595, 0],
-  [-155, -50],
 ];
