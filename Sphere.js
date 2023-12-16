@@ -15,6 +15,7 @@ export default class Sphere {
 
   getFloor() {
     var positiveNumber = this.position[1] + 50;
-    return positiveNumber / 10;
+    var Z = this.position[2] + 60 / 10;
+    return Z;
   }
 }

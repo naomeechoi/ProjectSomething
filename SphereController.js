@@ -3,7 +3,7 @@ import SphereShader from "./SphereShader.js";
 import Sphere from "./Sphere.js";
 import PhysicalEngine from "./PhysicalEngine.js";
 let shader = new SphereShader();
-let physicalE = new PhysicalEngine(1 / 10, -500);
+let physicalE = new PhysicalEngine(1 / 60, -500);
 let spheres = [];
 let testWheel = -1;
 

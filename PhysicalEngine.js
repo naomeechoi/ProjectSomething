@@ -7,12 +7,13 @@ export default class PhysicalEngine {
   fallWithGravity(sphere) {
     //console.log(sphere);
     sphere.verticalMovement.speed += 9.8 * this.frameRate;
-    sphere.position[1] -= sphere.verticalMovement.speed * this.frameRate;
+    sphere.position[1] -= sphere.verticalMovement.speed;
+    sphere.position[1] -= (sphere.position[1] - 50) * 0.1;
   }
 
   bounceUpWithGravity(sphere) {
     sphere.verticalMovement.speed -= 9.8 * this.frameRate;
-    sphere.position[1] += sphere.verticalMovement.speed * this.frameRate;
+    sphere.position[1] += sphere.verticalMovement.speed;
   }
 
   moveVertically(sphere) {
