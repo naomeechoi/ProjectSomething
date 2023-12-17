@@ -38,7 +38,7 @@ export default class SphereController {
         1,
       ];
       array.forEach((element) => {
-        for (let i = 5; i > 0; i--) {
+        for (let i = 9; i > 0; i--) {
           let color = [
             tempColor[0] - variation * i,
             tempColor[1] - variation * i,

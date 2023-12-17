@@ -1,5 +1,6 @@
 export default class Sphere {
   constructor(_position, _color, _restitution = Math.random()) {
+    this.originalPosition = _position;
     this.position = _position;
     this.color = _color;
     this.floor = this.getFloor();
@@ -11,6 +12,11 @@ export default class Sphere {
       state: 0, // 0 is Noting, 1 is going up, 2 is going down
       speed: 0,
       firstMoveDown: true,
+    };
+
+    this.collisionMovement = {
+      direction: [],
+      scale: 0,
     };
   }
 
