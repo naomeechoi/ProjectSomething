@@ -77,7 +77,7 @@ export default class SphereShader {
       this.slideSettings.cam1PosY,
       this.slideSettings.cam1PosZ,
     ];
-    const target = [-280, -140, 0];
+    const target = [-280, -140 + 950, 0];
     const up = [0, 1, 0];
     cameraMatrix = m4.lookAt(cameraPosition, target, up);
     worldMatrix = m4.yRotation(degToRad(this.slideSettings.rotation));
