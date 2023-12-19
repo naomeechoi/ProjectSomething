@@ -16,10 +16,12 @@ export default class PhysicalEngine {
       return;
     }
     if (sphere.position[1] <= this.bottom) {
+      sphere.gravitySpeed = 0;
       return;
     }
 
-    sphere.position[1] -= 10 * 9.8 * this.frameRate;
+    sphere.gravitySpeed += 9.8 * this.frameRate;
+    sphere.position[1] -= sphere.gravitySpeed;
 
     //first move down OFFSET
     // 처음 떨어지는 속도 조정
@@ -81,7 +83,6 @@ export default class PhysicalEngine {
 
     let sphereY = sphere.position[1];
     let normalVector;
-    console.log(sphereY + " " + this.bottom);
     if (sphereY - this.bottom <= sphereRadius) {
       normalVector = [0, 1, 0];
     } else if (this.top - sphereY <= sphereRadius) {
@@ -91,7 +92,7 @@ export default class PhysicalEngine {
     }
 
     let sphereVelocity = multiplyVectorByScalar(
-      sphere.movement.remainScalar,
+      sphere.movement.scalar,
       sphere.movement.direction
     );
 
@@ -111,17 +112,15 @@ export default class PhysicalEngine {
       sphereVelocity
     );
 
-    sphere.movement.remainScalar = Math.abs(
-      getScalarFromVector(directionVector) * sphere.movement.restitution
-    );
-    sphere.movement.scalarPerFrame =
-      sphere.movement.remainScalar * this.frameRate;
+    //console.log(directionVector);
+
+    sphere.movement.scalar = Math.abs(getScalarFromVector(directionVector));
     sphere.movement.direction = normalize(directionVector);
   }
 
   checkHitWithSolidSphere(sphere, solidSphere) {
     let sphereVelocity = multiplyVectorByScalar(
-      sphere.movement.remainScalar,
+      sphere.movement.scalar,
       sphere.movement.direction
     );
 
@@ -139,20 +138,22 @@ export default class PhysicalEngine {
       multiplyVectorByScalar(2, projectedNormalVector),
       sphereVelocity
     );
-    sphere.movement.remainScalar =
-      getScalarFromVector(directionVector) * sphere.movement.restitution;
-    sphere.movement.scalarPerFrame =
-      sphere.movement.remainScalar * this.frameRate;
+    sphere.movement.scalar = Math.abs(
+      getScalarFromVector(directionVector) * sphere.movement.restitution
+    );
     sphere.movement.direction = normalize(directionVector);
   }
 
   checkElasticCollision(sphere1, sphere2, sphereRadius) {
-    if ((sphere1.state = SOLID && sphere2.state == SOLID)) {
+    if (sphere1.state == SOLID && sphere2.state == SOLID) {
       return;
     }
 
+    let offset = 5;
     let tempVector = subtractVectors(sphere1.position, sphere2.position);
-    if (getScalarFromVector(tempVector) > sphereRadius) {
+    let gap = Math.abs(getScalarFromVector(tempVector));
+    if (gap > sphereRadius) {
+      console.log(gap + offset);
       return;
     }
 
@@ -164,43 +165,13 @@ export default class PhysicalEngine {
       return;
     }
 
-    let sphereVelocity1 = multiplyVectorByScalar(
-      sphere1.movement.remainScalar,
-      sphere1.movement.direction
-    );
+    let tempDirection = sphere1.movement.direction;
+    let tempScalar = sphere1.movement.scalar;
+    sphere1.movement.direction = sphere2.movement.direction;
+    sphere1.movement.scalar = sphere2.movement.scalar;
 
-    let sphereVelocity2 = multiplyVectorByScalar(
-      sphere2.movement.remainScalar,
-      sphere2.movement.direction
-    );
-
-    let momentumA = multiplyVectorByScalar(sphere1.mass, sphereVelocity1);
-    let momentumB = multiplyVectorByScalar(sphere2.mass, sphereVelocity2);
-    let sum1 = addVectors(momentumA, momentumB);
-
-    //after collision
-    let restitution = 0.7;
-    momentumA *= -restitution;
-    momentumB *= restitution;
-    //momentumA *= -sphere1.movement.restitution;
-    //momentumB *= sphere2.movement.restitution;
-    let sum2 = addVectors(momentumA, momentumB);
-
-    let temp = subtractVectors(sum1, sum2);
-    sphereVelocity2 = divideVectorByScalar(2, temp);
-    sphereVelocity1 = subtractVectors(sum1, sphereVelocity2);
-
-    sphere1.movement.remainScalar =
-      getScalarFromVector(sphereVelocity1) * sphere1.movement.restitution;
-    sphere1.movement.scalarPerFrame =
-      sphere1.movement.remainScalar * this.frameRate;
-    sphere1.movement.direction = normalize(sphereVelocity1);
-
-    sphere2.movement.remainScalar =
-      getScalarFromVector(sphereVelocity2) * sphere2.movement.restitution;
-    sphere2.movement.scalarPerFrame =
-      sphere2.movement.remainScalar * this.frameRate;
-    sphere2.movement.direction = normalize(sphereVelocity2);
+    sphere2.movement.direction = tempDirection;
+    sphere2.movement.scalar = tempScalar;
   }
 
   move(sphere) {
@@ -208,32 +179,13 @@ export default class PhysicalEngine {
       return;
     }
 
-    if (
-      sphere.state != SOLID &&
-      sphere.movement.remainScalar == 0 &&
-      sphere.position[1] > this.bottom
-    ) {
-      sphere.movement.direction = [0, -1, 0];
-      sphere.movement.remainScalar = sphere.mass * sphere.position[1] * 9.8;
-      sphere.movement.scalarPerFrame =
-        (sphere.movement.remainScalar / sphere.mass) * this.frameRate;
-    }
-
-    if (isSameVectors(sphere.movement.direction, [0, -1, 0]) == false) {
-      sphere.position = addVectors(
-        sphere.position,
-        multiplyVectorByScalar(
-          sphere.movement.scalarPerFrame,
-          sphere.movement.direction
-        )
-      );
-    }
-
-    sphere.movement.remainScalar -= sphere.movement.scalarPerFrame;
-    if (sphere.movement.remainScalar <= 0) {
-      sphere.movement.remainScalar = 0;
-      sphere.movement.scalarPerFrame = 0;
-    }
+    sphere.position = addVectors(
+      sphere.position,
+      multiplyVectorByScalar(
+        sphere.movement.scalar * this.frameRate,
+        sphere.movement.direction
+      )
+    );
   }
 }
 
@@ -258,7 +210,7 @@ function multiplyVectorByScalar(scalar, vector) {
 }
 
 function divideVectorByScalar(scalar, vector) {
-  return [scalar / vector[0], scalar / vector[1], scalar / vector[2]];
+  return [vector[0] / scalar, vector[1] / scalar, vector[2] / scalar];
 }
 
 function dot(a, b) {

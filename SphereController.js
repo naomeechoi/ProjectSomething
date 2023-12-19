@@ -54,7 +54,8 @@ export default class SphereController {
       });
     });
 
-    spheres.push(new Sphere([-300, 800, 0], [1, 1, 1, 1], SOLID));
+    spheres.push(new Sphere([-300, 800, 0], [0.5, 0.5, 1, 1], SOLID));
+    spheres.push(new Sphere([-300, 700, 0], [1, 1, 1, 1], SOLID));
     this.setSlide();
   }
 
@@ -190,18 +191,18 @@ export default class SphereController {
     for (let i = 0; i < spheres.length; i++) {
       if (testWheel == spheres[i].floor && spheres[i].state == SOLID) {
         spheres[i].state = LIQUID;
+        spheres[i].movement.direction = [0, -1, 0];
+        spheres[i].movement.scalar =
+          spheres[i].position[1] * 9.8 * spheres[i].mass;
       }
 
       let radius = 5;
-      //physicalE.checkBoundaryHit_LeftRight(spheres[i], radius);
       physicalE.checkBoundaryHit_TopBottom(spheres[i], radius);
 
-      /* for (let j = i + 1; j < spheres.length; j++) {
-        physicalE.checkElasticCollision(spheres[i], spheres[j], radius);
-      }
+      // for (let j = i + 1; j < spheres.length; j++) {
+      physicalE.checkElasticCollision(spheres[0], spheres[1], radius);
+      //  }
 
-      console.log(spheres[i]);*/
-      physicalE.applyGravity(spheres[i]);
       physicalE.move(spheres[i]);
       shader.drawScene(spheres[i].position, spheres[i].color);
     }

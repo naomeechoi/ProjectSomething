@@ -6,13 +6,13 @@ export default class Sphere {
 
     // 0 -> solid, 1 -> liquid, 2 -> gas
     this.state = _state;
-    this.mass = 20;
+    this.mass = 0.06;
+    this.gravitySpeed = 0;
 
     this.movement = {
       direction: [0, 0, 0],
-      remainScalar: 0,
-      scalarPerFrame: 0,
-      restitution: 0.5,
+      scalar: 0,
+      restitution: 1,
       firstMoveDown: true,
     };
 
