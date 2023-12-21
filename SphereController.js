@@ -3,8 +3,9 @@ import SphereShader from "./SphereShader.js";
 import Sphere from "./Sphere.js";
 import PhysicalEngine from "./PhysicalEngine.js";
 let shader = new SphereShader();
-let physicalE = new PhysicalEngine(1 / 50, 900, 400, 300, -800);
+let physicalE = new PhysicalEngine(1 / 150, 900, 400, 300, -800);
 let spheres = [];
+let wordArrays = [];
 let testWheel = -1;
 const SOLID = 0;
 const LIQUID = 1;
@@ -16,7 +17,6 @@ export default class SphereController {
     this.getBufferIndices(bufferInfoPositions, bufferInfoIndices);
     shader.addSphereBufferInfo(bufferInfoPositions, bufferInfoIndices);
 
-    let wordArrays = [];
     wordArrays.push(word_1);
     wordArrays.push(word_2);
     wordArrays.push(word_3);
@@ -40,21 +40,27 @@ export default class SphereController {
         1,
       ];
 
+      let tempArray = [];
       //let tempColor = [Math.random(), Math.random(), Math.random(), 1];
       array.forEach((element) => {
-        for (let i = 5; i > 0; i--) {
+        element[1] += 800;
+        element.push(-5);
+        for (let i = 10; i > 0; i--) {
           let color = [
-            tempColor[0] - variation * i,
-            tempColor[1] - variation * i,
-            tempColor[2] - variation * i,
+            Math.random() - variation * i,
+            Math.random() - variation * i,
+            Math.random() - variation * i,
             1,
           ];
 
-          let tempPos = [element[0], element[1] + 800, -5 + i * 10];
-          spheres.push(new Sphere(tempPos, color, SOLID));
+          let tempPos = [element[0], element[1], element[2] + i * 10];
+          tempArray.push(new Sphere(tempPos, color, SOLID));
         }
       });
+      spheres.push(tempArray);
     });
+
+    console.log(spheres);
 
     //spheres.push(new Sphere([-300, 800, 0], [0.5, 0.5, 1, 1], SOLID));
     //spheres.push(new Sphere([-300, 700, 0], [0.5, 1, 0.5, 1], SOLID));
@@ -189,46 +195,59 @@ export default class SphereController {
   }
 
   startMoveSpheres() {
-    spheres.forEach((sphere) => {
-      if (sphere.state == SOLID) {
-        sphere.state = LIQUID;
-        let random1 = Math.random() * 2 - 1;
-        //let random2 = Math.random * 2 - 1;
-        sphere.movement.direction = [0, -1, 0];
-        sphere.movement.scalar = sphere.position[1] * 9.8 * sphere.mass;
-        //physicalE.addjustPosition(sphere);
-      }
+    spheres.forEach((sphereArray) => {
+      sphereArray.forEach((sphere) => {
+        if (sphere.state == SOLID) {
+          sphere.state = LIQUID;
+          let random1 = Math.random() * 2 - 1;
+          //let random2 = Math.random * 2 - 1;
+          sphere.movement.direction = [0, -1, 0];
+          sphere.movement.scalar =
+            (sphere.position[1] - 400) * 9.8 * sphere.mass;
+          //physicalE.addjustPosition(sphere);
+        }
+      });
     });
   }
 
   checkSpheres() {
-    for (let i = 0; i < spheres.length; i++) {
-      //physicalE.applyGravity(spheres[i]);
-      let radius = 5;
-      for (let j = 0; j < spheres.length; j++) {
-        if (i == j) {
-          continue;
+    spheres.forEach((sphereArray) => {
+      for (let i = 0; i < sphereArray.length; i++) {
+        //physicalE.applyGravity(spheres[i]);
+        let radius = 5;
+        for (let j = 0; j < sphereArray.length; j++) {
+          if (i == j) {
+            continue;
+          }
+          physicalE.checkElasticCollision(
+            sphereArray[i],
+            sphereArray[j],
+            radius
+          );
         }
-        physicalE.checkElasticCollision(spheres[i], spheres[j], radius);
+        // physicalE.addjustPosition(spheres[i]);
+        //physicalE.applyGravity(spheres[i]);
       }
-      physicalE.checkBoundaryHit_TopBottom(spheres[i], radius);
-      // physicalE.addjustPosition(spheres[i]);
-      //physicalE.applyGravity(spheres[i]);
-    }
+    });
   }
 
   addjustSpheresPosition() {
-    spheres.forEach((sphere) => {
-      physicalE.applyGravity(sphere);
-      physicalE.addjustPosition(sphere);
+    spheres.forEach((sphereArray) => {
+      sphereArray.forEach((sphere) => {
+        physicalE.checkBoundaryHit_TopBottom(sphere, 5);
+        physicalE.applyGravity(sphere);
+        physicalE.addjustPosition(sphere);
+      });
     });
   }
 
   drawScene() {
     shader.beforeDraw();
 
-    spheres.forEach((sphere) => {
-      shader.drawScene(sphere.position, sphere.color);
+    spheres.forEach((sphereArray) => {
+      sphereArray.forEach((sphere) => {
+        shader.drawScene(sphere.position, sphere.color);
+      });
     });
   }
 

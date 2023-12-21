@@ -20,8 +20,8 @@ window.onload = function () {
   //sphereController.startMoveSpheres();
 
   //1초에 60번이면 6000 1000 0.02
-  const checkIntervalId = setInterval(() => checkLogic(), 20);
-  const positionSettingIntervalId = setInterval(() => addjustPos(), 20);
+  const checkIntervalId = setInterval(() => checkLogic(), 1);
+  const positionSettingIntervalId = setInterval(() => addjustPos(), 1);
   const drawIntervalId = setInterval(() => update(), 100);
   //update();
 };
