@@ -3,7 +3,7 @@ import SphereShader from "./SphereShader.js";
 import Sphere from "./Sphere.js";
 import PhysicalEngine from "./PhysicalEngine.js";
 let shader = new SphereShader();
-let physicalE = new PhysicalEngine(1 / 60, 900, 0, 300, -800);
+let physicalE = new PhysicalEngine(1 / 50, 900, 400, 300, -800);
 let spheres = [];
 let testWheel = -1;
 const SOLID = 0;
@@ -29,7 +29,7 @@ export default class SphereController {
     wordArrays.push(word_10);
     wordArrays.push(word_11);
     wordArrays.push(word_12);
-
+    //
     var variation = 0.07;
 
     wordArrays.forEach((array) => {
@@ -39,8 +39,10 @@ export default class SphereController {
         Math.random() + variation * 5,
         1,
       ];
+
+      //let tempColor = [Math.random(), Math.random(), Math.random(), 1];
       array.forEach((element) => {
-        for (let i = 1; i > 0; i--) {
+        for (let i = 5; i > 0; i--) {
           let color = [
             tempColor[0] - variation * i,
             tempColor[1] - variation * i,
@@ -48,14 +50,15 @@ export default class SphereController {
             1,
           ];
 
-          let tempPos = [element[0], element[1] + 950, -5 + i * 10];
-          //spheres.push(new Sphere(tempPos, color, SOLID));
+          let tempPos = [element[0], element[1] + 800, -5 + i * 10];
+          spheres.push(new Sphere(tempPos, color, SOLID));
         }
       });
     });
 
-    spheres.push(new Sphere([-300, 800, 0], [0.5, 0.5, 1, 1], SOLID));
-    spheres.push(new Sphere([-300, 700, 0], [1, 1, 1, 1], SOLID));
+    //spheres.push(new Sphere([-300, 800, 0], [0.5, 0.5, 1, 1], SOLID));
+    //spheres.push(new Sphere([-300, 700, 0], [0.5, 1, 0.5, 1], SOLID));
+    //spheres.push(new Sphere([-300, 600, 0], [1, 0.5, 0.5, 1], SOLID));
     this.setSlide();
   }
 
@@ -185,27 +188,48 @@ export default class SphereController {
     }
   }
 
+  startMoveSpheres() {
+    spheres.forEach((sphere) => {
+      if (sphere.state == SOLID) {
+        sphere.state = LIQUID;
+        let random1 = Math.random() * 2 - 1;
+        //let random2 = Math.random * 2 - 1;
+        sphere.movement.direction = [0, -1, 0];
+        sphere.movement.scalar = sphere.position[1] * 9.8 * sphere.mass;
+        //physicalE.addjustPosition(sphere);
+      }
+    });
+  }
+
+  checkSpheres() {
+    for (let i = 0; i < spheres.length; i++) {
+      //physicalE.applyGravity(spheres[i]);
+      let radius = 5;
+      for (let j = 0; j < spheres.length; j++) {
+        if (i == j) {
+          continue;
+        }
+        physicalE.checkElasticCollision(spheres[i], spheres[j], radius);
+      }
+      physicalE.checkBoundaryHit_TopBottom(spheres[i], radius);
+      // physicalE.addjustPosition(spheres[i]);
+      //physicalE.applyGravity(spheres[i]);
+    }
+  }
+
+  addjustSpheresPosition() {
+    spheres.forEach((sphere) => {
+      physicalE.applyGravity(sphere);
+      physicalE.addjustPosition(sphere);
+    });
+  }
+
   drawScene() {
     shader.beforeDraw();
 
-    for (let i = 0; i < spheres.length; i++) {
-      if (testWheel == spheres[i].floor && spheres[i].state == SOLID) {
-        spheres[i].state = LIQUID;
-        spheres[i].movement.direction = [0, -1, 0];
-        spheres[i].movement.scalar =
-          spheres[i].position[1] * 9.8 * spheres[i].mass;
-      }
-
-      let radius = 5;
-      physicalE.checkBoundaryHit_TopBottom(spheres[i], radius);
-
-      // for (let j = i + 1; j < spheres.length; j++) {
-      physicalE.checkElasticCollision(spheres[0], spheres[1], radius);
-      //  }
-
-      physicalE.move(spheres[i]);
-      shader.drawScene(spheres[i].position, spheres[i].color);
-    }
+    spheres.forEach((sphere) => {
+      shader.drawScene(sphere.position, sphere.color);
+    });
   }
 
   check() {
