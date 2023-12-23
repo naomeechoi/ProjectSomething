@@ -1,4 +1,4 @@
-const FRAMERATE = 1 / 50;
+const FRAMERATE = 1 / 60;
 const SECOND = 1000;
 
 // sphere states
@@ -8,8 +8,9 @@ const GAS = 2;
 
 const SPHERERADIUS = 5;
 
-let DOWNVECTOR = [0, -1, 0];
-let UPVECTOR = [0, 1, 0];
+let UP = [0, 1, 0];
+let DOWN = [0, -1, 0];
+
 const TOP = 900;
 const BOTTOM = 400;
 const LEFT = 300;

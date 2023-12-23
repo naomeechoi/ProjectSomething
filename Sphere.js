@@ -12,6 +12,9 @@ export default class Sphere {
     this.firstMoveDown = true;
 
     this.floor = this.getFloor();
+
+    this.upSphere = null;
+    this.downSphere = null;
   }
 
   getFloor() {

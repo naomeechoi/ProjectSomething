@@ -141,14 +141,14 @@ export default class PhysicalEngine {
     sphere.direction = normalize(directionVector);
   }
 
-  checkElasticCollision(sphere1, sphere2, sphereRadius) {
+  checkElasticCollision(sphere1, sphere2) {
     if (sphere1.state == SOLID && sphere2.state == SOLID) {
       return;
     }
     let offset = 0;
     let tempVector = subtractVectors(sphere1.position, sphere2.position);
     let gap = Math.abs(getScalarFromVector(tempVector));
-    if (gap < sphereRadius + offset) {
+    if (gap < SPHERERADIUS + offset) {
       if (sphere1 == SOLID) {
         checkHitWithSolidSphere(sphere2, sphere1);
         return;
@@ -171,12 +171,32 @@ export default class PhysicalEngine {
       return;
     }
 
-    sphere.position = addVectors(
+    let newPosition = addVectors(
       sphere.position,
       multiplyVectorByScalar(sphere.scalar * FRAMERATE, sphere.direction)
     );
 
-    sphere.position[1] -= sphere.gravitySpeed;
+    newPosition.position[1] -= sphere.gravitySpeed;
+    checkCollisionBeforeMove(sphere, newPosition);
+    sphere.position = newPosition;
+
+    function checkCollisionBeforeMove(sphere, newPosition) {
+      if (sphere.direction == UP && sphere.upSphere != null) {
+        if (newPosition[1] >= sphere.upSphere.position[1] - SPHERERADIUS) {
+          newPosition[1] =
+            sphere.upSphere.position[1] - SPHERERADIUS * 2 + SPHERERADIUS * 0.5;
+          checkElasticCollision(sphere, sphere.upSphere);
+        }
+      } else if (sphere.direction == DOWN && sphere.downSphere != null) {
+        if (newPosition[1] <= sphere.downSphere.position[1] + SPHERERADIUS) {
+          newPosition[1] =
+            sphere.downSphere.position[1] +
+            SPHERERADIUS * 2 -
+            SPHERERADIUS * 0.5;
+          checkElasticCollision(sphere, sphere.downSphere);
+        }
+      }
+    }
   }
 }
 
