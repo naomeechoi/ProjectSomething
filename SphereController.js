@@ -3,12 +3,9 @@ import SphereShader from "./SphereShader.js";
 import Sphere from "./Sphere.js";
 import PhysicalEngine from "./PhysicalEngine.js";
 let shader = new SphereShader();
-let physicalE = new PhysicalEngine(1 / 150, 900, 400, 300, -800);
+let physicalE = new PhysicalEngine();
 let spheres = [];
 let wordArrays = [];
-let testWheel = -1;
-const SOLID = 0;
-const LIQUID = 1;
 
 export default class SphereController {
   constructor() {
@@ -30,13 +27,13 @@ export default class SphereController {
     wordArrays.push(word_11);
     wordArrays.push(word_12);
     //
-    var variation = 0.07;
+    var variation = 0.07; //0.35;
 
     wordArrays.forEach((array) => {
       let tempColor = [
-        Math.random() + variation * 5,
-        Math.random() + variation * 5,
-        Math.random() + variation * 5,
+        Math.random() + variation,
+        Math.random() + variation,
+        Math.random() + variation,
         1,
       ];
 
@@ -61,6 +58,44 @@ export default class SphereController {
     //spheres.push(new Sphere([-300, 700, 0], [0.5, 1, 0.5, 1], SOLID));
     //spheres.push(new Sphere([-300, 600, 0], [1, 0.5, 0.5, 1], SOLID));
     this.setSlide();
+  }
+
+  startMoveSpheres() {
+    spheres.forEach((sphereArray) => {
+      sphereArray.forEach((sphere) => {
+        if (sphere.state == SOLID) {
+          sphere.state = LIQUID;
+          sphere.direction = DOWNVECTOR;
+          sphere.scalar = (sphere.position[1] - BOTTOM) * 9.8 * sphere.mass;
+        }
+      });
+    });
+  }
+
+  moveSpheres() {
+    let radius = 5;
+    spheres.forEach((sphereArray1) => {
+      sphereArray1.forEach((sphere1) => {
+        sphereArray1.forEach((sphere2) => {
+          if (sphere1 != sphere2) {
+            physicalE.checkElasticCollision(sphere1, sphere2, radius);
+          }
+        });
+        physicalE.checkBoundaryHit_TopBottom(sphere1, 5);
+        physicalE.setPosition(sphere1);
+      });
+    });
+  }
+
+  drawScene() {
+    shader.beforeDraw();
+
+    spheres.forEach((sphereArray) => {
+      sphereArray.forEach((sphere) => {
+        physicalE.gravity(sphere);
+        shader.drawScene(sphere.position, sphere.color);
+      });
+    });
   }
 
   setSlide() {
@@ -166,7 +201,6 @@ export default class SphereController {
         positions.push(z);
       }
     }
-
     var k1, k2;
     for (var i = 0; i <= stackCount; ++i) {
       k1 = i * (sectorCount + 1); // beginning of cur
@@ -187,67 +221,6 @@ export default class SphereController {
         }
       }
     }
-  }
-
-  startMoveSpheres() {
-    spheres.forEach((sphereArray) => {
-      sphereArray.forEach((sphere) => {
-        if (sphere.state == SOLID) {
-          sphere.state = LIQUID;
-          let random1 = Math.random() * 2 - 1;
-          //let random2 = Math.random * 2 - 1;
-          sphere.movement.direction = [0, -1, 0];
-          sphere.movement.scalar =
-            (sphere.position[1] - 400) * 9.8 * sphere.mass;
-          //physicalE.addjustPosition(sphere);
-        }
-      });
-    });
-  }
-
-  checkSpheres() {
-    spheres.forEach((sphereArray) => {
-      for (let i = 0; i < sphereArray.length; i++) {
-        //physicalE.applyGravity(spheres[i]);
-        let radius = 5;
-        for (let j = 0; j < sphereArray.length; j++) {
-          if (i == j) {
-            continue;
-          }
-          physicalE.checkElasticCollision(
-            sphereArray[i],
-            sphereArray[j],
-            radius
-          );
-        }
-        // physicalE.addjustPosition(spheres[i]);
-        //physicalE.applyGravity(spheres[i]);
-      }
-    });
-  }
-
-  addjustSpheresPosition() {
-    spheres.forEach((sphereArray) => {
-      sphereArray.forEach((sphere) => {
-        physicalE.checkBoundaryHit_TopBottom(sphere, 5);
-        physicalE.applyGravity(sphere);
-        physicalE.addjustPosition(sphere);
-      });
-    });
-  }
-
-  drawScene() {
-    shader.beforeDraw();
-
-    spheres.forEach((sphereArray) => {
-      sphereArray.forEach((sphere) => {
-        shader.drawScene(sphere.position, sphere.color);
-      });
-    });
-  }
-
-  check() {
-    testWheel++;
   }
 }
 

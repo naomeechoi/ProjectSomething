@@ -1,20 +1,15 @@
 export default class Sphere {
   constructor(_position, _color, _state) {
-    this.originalPosition = _position;
     this.position = _position;
     this.color = _color;
-
-    // 0 -> solid, 1 -> liquid, 2 -> gas
     this.state = _state;
+
     this.mass = 0.3;
     this.gravitySpeed = 0;
-
-    this.movement = {
-      direction: [0, 0, 0],
-      scalar: 0,
-      restitution: 0.9,
-      firstMoveDown: true,
-    };
+    this.direction = [0, 0, 0];
+    this.scalar = 0;
+    this.restitution = 0.9;
+    this.firstMoveDown = true;
 
     this.floor = this.getFloor();
   }
