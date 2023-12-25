@@ -76,14 +76,14 @@ export default class PhysicalEngine {
       normalVector = [0, 1, 0];
 
       //밑에 갇히는 문제 해결하기 위해 충돌시 바로 위치 보정
-      sphere.position[1] = BOTTOM + sphereRadius * 1.1;
+      sphere.position[1] = BOTTOM + sphereRadius * 1.001;
       this.setPosition(sphere);
       sphere.gravitySpeed = 0;
     } else if (sphereY + sphereRadius > TOP) {
       normalVector = [0, -1, 0];
 
       //위에 갇히는 문제 해결하기 위해 충돌시 바로 위치 보정
-      sphere.position[1] = TOP - sphereRadius * 1.1;
+      sphere.position[1] = TOP - sphereRadius * 1.001;
       this.setPosition(sphere);
     } else {
       return;
@@ -113,6 +113,7 @@ export default class PhysicalEngine {
     sphere.scalar =
       Math.abs(getScalarFromVector(directionVector)) * sphere.restitution;
     sphere.direction = normalize(directionVector);
+    this.setPosition(sphere);
   }
 
   checkHitWithSolidSphere(sphere, solidSphere) {
@@ -176,25 +177,51 @@ export default class PhysicalEngine {
       multiplyVectorByScalar(sphere.scalar * FRAMERATE, sphere.direction)
     );
 
-    newPosition.position[1] -= sphere.gravitySpeed;
-    checkCollisionBeforeMove(sphere, newPosition);
+    this.checkCollisionBeforeMove(sphere, newPosition);
     sphere.position = newPosition;
+  }
 
-    function checkCollisionBeforeMove(sphere, newPosition) {
-      if (sphere.direction == UP && sphere.upSphere != null) {
-        if (newPosition[1] >= sphere.upSphere.position[1] - SPHERERADIUS) {
-          newPosition[1] =
-            sphere.upSphere.position[1] - SPHERERADIUS * 2 + SPHERERADIUS * 0.5;
-          checkElasticCollision(sphere, sphere.upSphere);
-        }
-      } else if (sphere.direction == DOWN && sphere.downSphere != null) {
-        if (newPosition[1] <= sphere.downSphere.position[1] + SPHERERADIUS) {
-          newPosition[1] =
-            sphere.downSphere.position[1] +
-            SPHERERADIUS * 2 -
-            SPHERERADIUS * 0.5;
-          checkElasticCollision(sphere, sphere.downSphere);
-        }
+  setPosition2(sphere) {
+    if (sphere.state == SOLID) {
+      return;
+    }
+    let newPosition = addVectors(
+      sphere.position,
+      multiplyVectorByScalar(sphere.scalar * FRAMERATE, sphere.direction)
+    );
+    newPosition[1] -= sphere.gravitySpeed;
+    this.checkCollisionBeforeMove(sphere, newPosition);
+    sphere.position = newPosition;
+  }
+
+  checkCollisionBeforeMove(sphere, newPosition) {
+    if (isSameVectors(sphere.direction, [0, 1, 0]) && sphere.upSphere != null) {
+      if (newPosition[1] >= sphere.upSphere.position[1] - SPHERERADIUS) {
+        //console.log("test1");
+        newPosition[1] = sphere.upSphere.position[1] - SPHERERADIUS * 2;
+
+        let tempDirection = sphere.direction;
+        let tempScalar = sphere.scalar;
+        sphere.direction = sphere.upSphere.direction;
+        sphere.scalar = sphere.upSphere.scalar;
+        sphere.upSphere.direction = tempDirection;
+        sphere.upSphere.scalar = tempScalar;
+      }
+    }
+
+    if (
+      isSameVectors(sphere.direction, [0, -1, 0]) &&
+      sphere.downSphere != null
+    ) {
+      if (newPosition[1] <= sphere.downSphere.position[1] + SPHERERADIUS) {
+        // console.log("test2");
+        newPosition[1] = sphere.downSphere.position[1] + SPHERERADIUS * 2;
+        let tempDirection = sphere.direction;
+        let tempScalar = sphere.scalar;
+        sphere.direction = sphere.downSphere.direction;
+        sphere.scalar = sphere.downSphere.scalar;
+        sphere.downSphere.direction = tempDirection;
+        sphere.downSphere.scalar = tempScalar;
       }
     }
   }

@@ -37,12 +37,66 @@ export default class SphereShader {
     }
   }
 
-  addSphereBufferInfo(positions, indices) {
-    sphereBufferInfo = webglUtils.createBufferInfoFromArrays(gl, {
-      position: { numComponents: 3, data: positions, type: Float32Array },
-      indices,
+  setSphereBufferInro() {
+    let vertices = [];
+
+    var radius = 5;
+    var x, y, z, xy; // vertex position
+    var stackCount = 10;
+    var sectorCount = 10;
+    var sectorStep = (2 * Math.PI) / sectorCount;
+    var stackStep = Math.PI / stackCount;
+    var sectorAngle, stackAngle;
+    for (var i = 0; i <= stackCount; ++i) {
+      stackAngle = Math.PI / 2 - i * stackStep; // st
+      xy = radius * Math.cos(stackAngle); // r * cos(
+      z = radius * Math.sin(stackAngle); // r * sin(u
+      // add (sectorCount+1) vertices per stack
+      // first and last vertices have same position a
+      for (var j = 0; j <= sectorCount; ++j) {
+        sectorAngle = j * sectorStep; // starting fro
+        // vertex position (x, y, z)
+        x = xy * Math.cos(sectorAngle); // r * cos(u)
+        y = xy * Math.sin(sectorAngle); // r * cos(u)
+        vertices.push(x);
+        vertices.push(y);
+        vertices.push(z);
+      }
+    }
+
+    let indices = [];
+    var k1, k2;
+    for (var i = 0; i <= stackCount; ++i) {
+      k1 = i * (sectorCount + 1); // beginning of cur
+      k2 = k1 + sectorCount + 1; // beginning of next
+      for (var j = 0; j <= sectorCount; ++j, ++k1, ++k2) {
+        // 2 triangles per sector excluding first and
+        // k1 => k2 => k1+1
+        if (i != 0) {
+          indices.push(k1);
+          indices.push(k2);
+          indices.push(k1 + 1);
+        }
+        // k1+1 => k2 => k2+1
+        if (i != stackCount - 1) {
+          indices.push(k1 + 1);
+          indices.push(k2);
+          indices.push(k2 + 1);
+        }
+      }
+    }
+
+    let positions = [];
+    indices.forEach((element) => {
+      var firstIdx = (element - 1) * 3;
+      positions.push(vertices[firstIdx]);
+      positions.push(vertices[firstIdx + 1]);
+      positions.push(vertices[firstIdx + 2]);
     });
 
+    sphereBufferInfo = webglUtils.createBufferInfoFromArrays(gl, {
+      position: { numComponents: 3, data: positions, type: Float32Array },
+    });
     this.slideSettings = [];
   }
 

@@ -9,24 +9,46 @@ let wordArrays = [];
 
 export default class SphereController {
   constructor() {
-    var bufferInfoPositions = [];
-    var bufferInfoIndices = [];
-    this.getBufferIndices(bufferInfoPositions, bufferInfoIndices);
-    shader.addSphereBufferInfo(bufferInfoPositions, bufferInfoIndices);
+    shader.setSphereBufferInro();
 
-    wordArrays.push(word_1);
-    wordArrays.push(word_2);
-    wordArrays.push(word_3);
-    wordArrays.push(word_4);
-    wordArrays.push(word_5);
-    wordArrays.push(word_6);
-    wordArrays.push(word_7);
-    wordArrays.push(word_8);
-    wordArrays.push(word_9);
-    wordArrays.push(word_10);
-    wordArrays.push(word_11);
-    wordArrays.push(word_12);
-    //
+    word_1.forEach((element) => {
+      wordArrays.push(element);
+    });
+    word_2.forEach((element) => {
+      wordArrays.push(element);
+    });
+    word_3.forEach((element) => {
+      wordArrays.push(element);
+    });
+    word_4.forEach((element) => {
+      wordArrays.push(element);
+    });
+
+    word_5.forEach((element) => {
+      wordArrays.push(element);
+    });
+    word_6.forEach((element) => {
+      wordArrays.push(element);
+    });
+    word_7.forEach((element) => {
+      wordArrays.push(element);
+    });
+    word_8.forEach((element) => {
+      wordArrays.push(element);
+    });
+    word_9.forEach((element) => {
+      wordArrays.push(element);
+    });
+    word_10.forEach((element) => {
+      wordArrays.push(element);
+    });
+    word_11.forEach((element) => {
+      wordArrays.push(element);
+    });
+    word_12.forEach((element) => {
+      wordArrays.push(element);
+    });
+
     var variation = 0.07; //0.35;
 
     // TO DO 여기 로직 다시 정리해야함!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -42,19 +64,40 @@ export default class SphereController {
       let tempArray = [];
       //let tempColor = [Math.random(), Math.random(), Math.random(), 1];
       array.forEach((element) => {
-        for (let i = 10; i > 0; i--) {
-          let color = [
-            Math.random() - variation * i,
-            Math.random() - variation * i,
-            Math.random() - variation * i,
-            1,
-          ];
-
-          let tempPos = [element[0], element[1], element[2] + i * 10];
-          tempArray.push(new Sphere(tempPos, color, SOLID));
-        }
+        let color = [
+          Math.random() - variation,
+          Math.random() - variation,
+          Math.random() - variation,
+          1,
+        ];
+        tempArray.push(new Sphere(element, color, SOLID));
       });
+      // array.forEach((element) => {
+      //for (let i = 10; i > 0; i--) {
+      //  let color = [
+      //    Math.random() - variation * i,
+      //    Math.random() - variation * i,
+      //    Math.random() - variation * i,
+      //    1,
+      //  ];
+      //
+      //  let tempPos = [element[0], element[1], element[2] + i * 10];
+      //  tempArray.push(new Sphere(tempPos, color, SOLID));
+      //}
+      //});
       spheres.push(tempArray);
+    });
+
+    spheres.forEach((array) => {
+      for (var i = 0; i < array.length; i++) {
+        if (i > 0) {
+          array[i].upSphere = array[i - 1];
+        }
+
+        if (i < array.length - 1) {
+          array[i].downSphere = array[i + 1];
+        }
+      }
     });
 
     //spheres.push(new Sphere([-300, 800, 0], [0.5, 0.5, 1, 1], SOLID));
@@ -68,14 +111,14 @@ export default class SphereController {
       sphereArray.forEach((sphere) => {
         if (sphere.state == SOLID) {
           sphere.state = LIQUID;
-          sphere.direction = DOWNVECTOR;
+          sphere.direction = DOWN;
           sphere.scalar = (sphere.position[1] - BOTTOM) * 9.8 * sphere.mass;
         }
       });
     });
   }
 
-  moveSpheres() {
+  collisionSpheres() {
     let radius = 5;
     spheres.forEach((sphereArray1) => {
       sphereArray1.forEach((sphere1) => {
@@ -85,7 +128,16 @@ export default class SphereController {
           }
         });
         physicalE.checkBoundaryHit_TopBottom(sphere1, 5);
-        physicalE.setPosition(sphere1);
+      });
+    });
+  }
+
+  moveSpheres() {
+    let radius = 5;
+    spheres.forEach((sphereArray1) => {
+      sphereArray1.forEach((sphere1) => {
+        //충돌과 별개로 위치 셋팅
+        physicalE.setPosition2(sphere1);
       });
     });
   }
@@ -178,52 +230,6 @@ export default class SphereController {
         },
       ]
     );
-  }
-
-  getBufferIndices(positions, indices) {
-    var radius = 5;
-    var x, y, z, xy; // vertex position
-    var stackCount = 10;
-    var sectorCount = 10;
-    var sectorStep = (2 * Math.PI) / sectorCount;
-    var stackStep = Math.PI / stackCount;
-    var sectorAngle, stackAngle;
-    for (var i = 0; i <= stackCount; ++i) {
-      stackAngle = Math.PI / 2 - i * stackStep; // st
-      xy = radius * Math.cos(stackAngle); // r * cos(
-      z = radius * Math.sin(stackAngle); // r * sin(u
-      // add (sectorCount+1) vertices per stack
-      // first and last vertices have same position a
-      for (var j = 0; j <= sectorCount; ++j) {
-        sectorAngle = j * sectorStep; // starting fro
-        // vertex position (x, y, z)
-        x = xy * Math.cos(sectorAngle); // r * cos(u)
-        y = xy * Math.sin(sectorAngle); // r * cos(u)
-        positions.push(x);
-        positions.push(y);
-        positions.push(z);
-      }
-    }
-    var k1, k2;
-    for (var i = 0; i <= stackCount; ++i) {
-      k1 = i * (sectorCount + 1); // beginning of cur
-      k2 = k1 + sectorCount + 1; // beginning of next
-      for (var j = 0; j <= sectorCount; ++j, ++k1, ++k2) {
-        // 2 triangles per sector excluding first and
-        // k1 => k2 => k1+1
-        if (i != 0) {
-          indices.push(k1);
-          indices.push(k2);
-          indices.push(k1 + 1);
-        }
-        // k1+1 => k2 => k2+1
-        if (i != stackCount - 1) {
-          indices.push(k1 + 1);
-          indices.push(k2);
-          indices.push(k2 + 1);
-        }
-      }
-    }
   }
 }
 
