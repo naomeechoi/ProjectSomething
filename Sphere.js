@@ -8,7 +8,7 @@ export default class Sphere {
     this.gravitySpeed = 0;
     this.direction = [0, 0, 0];
     this.scalar = 0;
-    this.restitution = 0.9;
+    this.restitution = 0.7;
     this.firstMoveDown = true;
 
     this.floor = this.getFloor();

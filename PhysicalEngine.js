@@ -65,25 +65,25 @@ export default class PhysicalEngine {
     sphere.direction = normalize(directionVector);
   }
 
-  checkBoundaryHit_TopBottom(sphere, sphereRadius) {
+  checkBoundaryHit_TopBottom(sphere) {
     if (sphere.state == SOLID) {
       return;
     }
 
     let sphereY = sphere.position[1];
     let normalVector;
-    if (sphereY - sphereRadius < BOTTOM) {
+    if (sphereY - SPHERERADIUS < BOTTOM) {
       normalVector = [0, 1, 0];
 
       //밑에 갇히는 문제 해결하기 위해 충돌시 바로 위치 보정
-      sphere.position[1] = BOTTOM + sphereRadius * 1.001;
+      sphere.position[1] = BOTTOM + SPHERERADIUS * 1.001;
       this.setPosition(sphere);
       sphere.gravitySpeed = 0;
-    } else if (sphereY + sphereRadius > TOP) {
+    } else if (sphereY + SPHERERADIUS > TOP) {
       normalVector = [0, -1, 0];
 
       //위에 갇히는 문제 해결하기 위해 충돌시 바로 위치 보정
-      sphere.position[1] = TOP - sphereRadius * 1.001;
+      sphere.position[1] = TOP - SPHERERADIUS * 1.001;
       this.setPosition(sphere);
     } else {
       return;

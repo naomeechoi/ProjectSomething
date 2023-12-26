@@ -10,82 +10,58 @@ let wordArrays = [];
 export default class SphereController {
   constructor() {
     shader.setSphereBufferInro();
+    let arrays = [];
+    arrays.push(word_1);
+    arrays.push(word_2);
+    arrays.push(word_3);
+    arrays.push(word_4);
+    arrays.push(word_5);
+    arrays.push(word_6);
+    arrays.push(word_7);
+    arrays.push(word_8);
+    arrays.push(word_9);
+    arrays.push(word_10);
+    arrays.push(word_11);
+    arrays.push(word_12);
 
-    word_1.forEach((element) => {
-      wordArrays.push(element);
-    });
-    word_2.forEach((element) => {
-      wordArrays.push(element);
-    });
-    word_3.forEach((element) => {
-      wordArrays.push(element);
-    });
-    word_4.forEach((element) => {
-      wordArrays.push(element);
-    });
-
-    word_5.forEach((element) => {
-      wordArrays.push(element);
-    });
-    word_6.forEach((element) => {
-      wordArrays.push(element);
-    });
-    word_7.forEach((element) => {
-      wordArrays.push(element);
-    });
-    word_8.forEach((element) => {
-      wordArrays.push(element);
-    });
-    word_9.forEach((element) => {
-      wordArrays.push(element);
-    });
-    word_10.forEach((element) => {
-      wordArrays.push(element);
-    });
-    word_11.forEach((element) => {
-      wordArrays.push(element);
-    });
-    word_12.forEach((element) => {
-      wordArrays.push(element);
-    });
-
-    var variation = 0.07; //0.35;
-
-    // TO DO 여기 로직 다시 정리해야함!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // 스피어어레이 확인하셈
-    wordArrays.forEach((array) => {
-      let tempColor = [
-        Math.random() + variation,
-        Math.random() + variation,
-        Math.random() + variation,
-        1,
-      ];
-
-      let tempArray = [];
-      //let tempColor = [Math.random(), Math.random(), Math.random(), 1];
+    var variation = 0.055;
+    arrays.forEach((array) => {
+      let tempColor = [Math.random(), Math.random(), Math.random(), 1];
       array.forEach((element) => {
-        let color = [
-          Math.random() - variation,
-          Math.random() - variation,
-          Math.random() - variation,
-          1,
-        ];
-        tempArray.push(new Sphere(element, color, SOLID));
+        wordArrays.push(element);
+
+        let tempArray = [];
+        element.forEach((positions) => {
+          let color = [
+            tempColor[0] - (positions[2] / 5) * variation,
+            tempColor[1] - (positions[2] / 5) * variation,
+            tempColor[2] - (positions[2] / 5) * variation,
+            1,
+          ];
+          tempArray.push(new Sphere(positions, color, SOLID));
+        });
+        spheres.push(tempArray);
+
+        for (let i = 1; i < 5; i++) {
+          let tempBigArray = [];
+          element.forEach((positions) => {
+            let tempArray = [];
+            tempArray.push(positions[0]);
+            tempArray.push(positions[1]);
+            tempArray.push(positions[2] + i * SPHERERADIUS * 2);
+
+            let color = [
+              tempColor[0] - (tempArray[2] / 5) * variation,
+              tempColor[1] - (tempArray[2] / 5) * variation,
+              tempColor[2] - (tempArray[2] / 5) * variation,
+              1,
+            ];
+
+            tempBigArray.push(new Sphere(tempArray, color, SOLID));
+          });
+          spheres.push(tempBigArray);
+        }
       });
-      // array.forEach((element) => {
-      //for (let i = 10; i > 0; i--) {
-      //  let color = [
-      //    Math.random() - variation * i,
-      //    Math.random() - variation * i,
-      //    Math.random() - variation * i,
-      //    1,
-      //  ];
-      //
-      //  let tempPos = [element[0], element[1], element[2] + i * 10];
-      //  tempArray.push(new Sphere(tempPos, color, SOLID));
-      //}
-      //});
-      spheres.push(tempArray);
     });
 
     spheres.forEach((array) => {
@@ -100,9 +76,6 @@ export default class SphereController {
       }
     });
 
-    //spheres.push(new Sphere([-300, 800, 0], [0.5, 0.5, 1, 1], SOLID));
-    //spheres.push(new Sphere([-300, 700, 0], [0.5, 1, 0.5, 1], SOLID));
-    //spheres.push(new Sphere([-300, 600, 0], [1, 0.5, 0.5, 1], SOLID));
     this.setSlide();
   }
 
@@ -119,7 +92,6 @@ export default class SphereController {
   }
 
   collisionSpheres() {
-    let radius = 5;
     spheres.forEach((sphereArray1) => {
       sphereArray1.forEach((sphere1) => {
         sphereArray1.forEach((sphere2) => {
@@ -127,13 +99,12 @@ export default class SphereController {
             physicalE.checkElasticCollision(sphere1, sphere2);
           }
         });
-        physicalE.checkBoundaryHit_TopBottom(sphere1, 5);
+        physicalE.checkBoundaryHit_TopBottom(sphere1);
       });
     });
   }
 
   moveSpheres() {
-    let radius = 5;
     spheres.forEach((sphereArray1) => {
       sphereArray1.forEach((sphere1) => {
         //충돌과 별개로 위치 셋팅
@@ -156,10 +127,10 @@ export default class SphereController {
   setSlide() {
     shader.slideSettings = {
       rotation: 0, // in degrees
-      cam1FieldOfView: 100, // in degrees
-      cam1PosX: -310,
+      cam1FieldOfView: 112, // in degrees
+      cam1PosX: 16,
       cam1PosY: 115 + 950,
-      cam1PosZ: -264,
+      cam1PosZ: -270,
       cam1Near: 23,
       cam1Far: 2000,
       cam1Ortho: false,
@@ -535,6 +506,8 @@ var word_8 = [
   ],
 
   [[-345, 850, -5]],
+
+  [[-355, 850, -5]],
 ];
 
 var word_9 = [
@@ -642,9 +615,9 @@ var word_11 = [
     [-535, 750, -5],
   ],
 
-  [[-505, 800, -5]],
+  [[-505, 810, -5]],
   [[-515, 790, -5]],
-  [[-525, 780, -5]],
+  [[-525, 770, -5]],
 ];
 
 var word_12 = [

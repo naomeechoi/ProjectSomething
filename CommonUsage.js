@@ -11,7 +11,7 @@ const SPHERERADIUS = 5;
 let UP = [0, 1, 0];
 let DOWN = [0, -1, 0];
 
-const TOP = 900;
+const TOP = 1500;
 const BOTTOM = 400;
 const LEFT = 300;
 const RIGHT = -800;

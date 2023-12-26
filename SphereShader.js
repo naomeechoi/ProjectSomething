@@ -141,7 +141,7 @@ export default class SphereShader {
     );
 
     gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
-    gl.clearColor(0, 0, 0, 1);
+    gl.clearColor(1, 1, 1, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
