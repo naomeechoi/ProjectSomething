@@ -4,7 +4,8 @@ const SECOND = 1000;
 // sphere states
 const SOLID = 0;
 const LIQUID = 1;
-const GAS = 2;
+const FLOWING_LIQUID = 2;
+const GAS = 3;
 
 const SPHERERADIUS = 5;
 

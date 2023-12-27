@@ -12,14 +12,6 @@ export default class PhysicalEngine {
     }
 
     sphere.gravitySpeed += 9.8 * FRAMERATE;
-
-    //first move down OFFSET
-    // 처음 떨어지는 속도 조정
-    /*
-    if (sphere.verticalMovement.movem
-      /*ent == true) {
-      sphere.position[1] -= (sphere.position[1] - 50) * -0.05 * Math.random();
-    }*/
   }
 
   checkBoundaryHit_LeftRight(sphere, sphereRadius) {
@@ -66,7 +58,7 @@ export default class PhysicalEngine {
   }
 
   checkBoundaryHit_TopBottom(sphere) {
-    if (sphere.state == SOLID) {
+    if (sphere.state == SOLID || sphere.state == FLOWING_LIQUID) {
       return;
     }
 
@@ -144,6 +136,9 @@ export default class PhysicalEngine {
   }
 
   checkElasticCollision(sphere1, sphere2) {
+    if (sphere1.state == FLOWING_LIQUID || sphere2.state == FLOWING_LIQUID) {
+      return;
+    }
     if (sphere1.state == SOLID && sphere2.state == SOLID) {
       return;
     }
@@ -164,9 +159,9 @@ export default class PhysicalEngine {
       let tempDirection = sphere1.direction;
       let tempScalar = sphere1.scalar;
       sphere1.direction = sphere2.direction;
-      sphere1.scalar = sphere2.scalar;
+      sphere1.scalar = sphere2.scalar * sphere1.restitution;
       sphere2.direction = tempDirection;
-      sphere2.scalar = tempScalar;
+      sphere2.scalar = tempScalar * sphere1.restitution;
     }
   }
 
@@ -192,15 +187,20 @@ export default class PhysicalEngine {
       sphere.position,
       multiplyVectorByScalar(sphere.scalar * FRAMERATE, sphere.direction)
     );
-    newPosition[1] -= sphere.gravitySpeed;
-    this.checkCollisionBeforeMove(sphere, newPosition);
+    if (sphere.state != FLOWING_LIQUID) {
+      newPosition[1] -= sphere.gravitySpeed;
+      this.checkCollisionBeforeMove(sphere, newPosition);
+    }
     sphere.position = newPosition;
   }
 
   checkCollisionBeforeMove(sphere, newPosition) {
+    if (sphere.state == FLOWING_LIQUID) {
+      return;
+    }
+
     if (isSameVectors(sphere.direction, [0, 1, 0]) && sphere.upSphere != null) {
       if (newPosition[1] >= sphere.upSphere.position[1] - SPHERERADIUS) {
-        //console.log("test1");
         newPosition[1] = sphere.upSphere.position[1] - SPHERERADIUS * 2;
 
         if (sphere.upSphere.state == SOLID) {
@@ -233,7 +233,6 @@ export default class PhysicalEngine {
       sphere.downSphere != null
     ) {
       if (newPosition[1] <= sphere.downSphere.position[1] + SPHERERADIUS) {
-        // console.log("test2");
         newPosition[1] = sphere.downSphere.position[1] + SPHERERADIUS * 2;
         let tempDirection = sphere.direction;
         let tempScalar = sphere.scalar;
@@ -248,7 +247,6 @@ export default class PhysicalEngine {
       sphere.downSphere == null
     ) {
       if (newPosition[1] <= BOTTOM + SPHERERADIUS) {
-        // console.log("test2");
         newPosition[1] = BOTTOM + SPHERERADIUS * 2;
         sphere.direction = UP;
         sphere.scalar *= sphere.restitution;

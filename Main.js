@@ -11,6 +11,7 @@ window.onload = function () {
     wheel++;
 
     sphereController.startMoveSpheres(wheel);
+    sphereController.startVerticalMove(wheel);
     // draw();
   });
 

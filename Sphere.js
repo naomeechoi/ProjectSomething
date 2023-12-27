@@ -7,17 +7,18 @@ export default class Sphere {
     this.yLevel = _position[1];
     this.zLevel = _position[2] / 5;
 
-    this.mass = 0.2;
+    this.mass = 0.9;
     this.gravitySpeed = 0;
     this.direction = [0, 0, 0];
     this.scalar = 0;
-    this.restitution = 0.9;
-    this.firstMoveDown = true;
+    this.restitution = 0.7;
 
     this.floor = this.getFloor();
 
     this.upSphere = null;
     this.downSphere = null;
+
+    this.bottomCount = 0;
   }
 
   getFloor() {
@@ -37,29 +38,29 @@ export default class Sphere {
     }
 
     if (this.yLevel == 850) {
-      total += 11;
+      this.yLevel = 11;
     } else if (this.yLevel == 840) {
-      total += 10;
+      this.yLevel = 10;
     } else if (this.yLevel == 830) {
-      total += 9;
+      this.yLevel = 9;
     } else if (this.yLevel == 820) {
-      total += 8;
+      this.yLevel = 8;
     } else if (this.yLevel == 810) {
-      total += 7;
+      this.yLevel = 7;
     } else if (this.yLevel == 800) {
-      total += 6;
+      this.yLevel = 6;
     } else if (this.yLevel == 790) {
-      total += 5;
+      this.yLevel = 5;
     } else if (this.yLevel == 780) {
-      total += 4;
+      this.yLevel = 4;
     } else if (this.yLevel == 770) {
-      total += 3;
+      this.yLevel = 3;
     } else if (this.yLevel == 760) {
-      total += 2;
+      this.yLevel = 2;
     } else if (this.yLevel == 750) {
-      total += 1;
+      this.yLevel = 1;
     }
 
-    return total;
+    return total + this.yLevel;
   }
 }

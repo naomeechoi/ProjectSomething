@@ -24,9 +24,14 @@ export default class SphereController {
     arrays.push(word_11);
     arrays.push(word_12);
 
-    var variation = 0.055;
+    var variation = 0.085;
     arrays.forEach((array) => {
-      let tempColor = [Math.random(), Math.random(), Math.random(), 1];
+      let tempColor = [
+        1 - Math.random() * 0.5,
+        1 - Math.random() * 0.5,
+        1 - Math.random() * 0.5,
+        1,
+      ];
       array.forEach((element) => {
         wordArrays.push(element);
 
@@ -93,6 +98,30 @@ export default class SphereController {
     });
   }
 
+  startVerticalMove(wheel) {
+    if (wheel < 60) {
+      return;
+    }
+
+    spheres.forEach((sphereArray) => {
+      sphereArray.forEach((sphere) => {
+        if (sphere.state == LIQUID && sphere.bottomCount > SECOND * FRAMERATE) {
+          sphere.state = FLOWING_LIQUID;
+
+          let direction = normalize([
+            Math.random() * 2 - 1,
+            0,
+            Math.random() * 2 - 1,
+          ]);
+
+          sphere.direction = direction;
+          sphere.scalar = SPHERERADIUS * 100;
+          physicalE.setPosition(sphere);
+        }
+      });
+    });
+  }
+
   collisionSpheres() {
     spheres.forEach((sphereArray1) => {
       sphereArray1.forEach((sphere1) => {
@@ -121,6 +150,10 @@ export default class SphereController {
     spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
         physicalE.gravity(sphere);
+
+        if (sphere.position[1] < BOTTOM + SPHERERADIUS * 3) {
+          sphere.bottomCount++;
+        }
         shader.drawScene(sphere.position, sphere.color);
       });
     });
@@ -659,3 +692,13 @@ var word_12 = [
     [-595, 750, 5],
   ],
 ];
+
+function normalize(v) {
+  var length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+  // make sure we don't divide by 0.
+  if (length > 0.00001) {
+    return [v[0] / length, v[1] / length, v[2] / length];
+  } else {
+    return [0, 0, 0];
+  }
+}
