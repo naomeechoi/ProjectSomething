@@ -9,10 +9,9 @@ window.onload = function () {
 
   addEventListener("wheel", (event) => {
     wheel++;
-    if (wheel == 1) {
-      sphereController.startMoveSpheres();
-      draw();
-    }
+
+    sphereController.startMoveSpheres(wheel);
+    // draw();
   });
 
   //1초에 60번이면 6000 1000 0.02

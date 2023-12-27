@@ -112,6 +112,7 @@ export default class PhysicalEngine {
 
     sphere.scalar =
       Math.abs(getScalarFromVector(directionVector)) * sphere.restitution;
+
     sphere.direction = normalize(directionVector);
     this.setPosition(sphere);
   }
@@ -151,10 +152,12 @@ export default class PhysicalEngine {
     let gap = Math.abs(getScalarFromVector(tempVector));
     if (gap < SPHERERADIUS + offset) {
       if (sphere1 == SOLID) {
-        checkHitWithSolidSphere(sphere2, sphere1);
+        sphere2.direction = DOWN;
+        sphere2.scalar *= sphere2.restitution;
         return;
       } else if (sphere2 == SOLID) {
-        checkHitWithSolidSphere(sphere1, sphere2);
+        sphere1.direction = DOWN;
+        sphere1.scalar *= sphere1.restitution;
         return;
       }
 
@@ -200,12 +203,28 @@ export default class PhysicalEngine {
         //console.log("test1");
         newPosition[1] = sphere.upSphere.position[1] - SPHERERADIUS * 2;
 
+        if (sphere.upSphere.state == SOLID) {
+          sphere.direction = DOWN;
+          sphere.scalar *= sphere.restitution;
+
+          return;
+        }
+
         let tempDirection = sphere.direction;
         let tempScalar = sphere.scalar;
         sphere.direction = sphere.upSphere.direction;
-        sphere.scalar = sphere.upSphere.scalar;
+        sphere.scalar = sphere.upSphere.scalar * sphere.restitution;
         sphere.upSphere.direction = tempDirection;
-        sphere.upSphere.scalar = tempScalar;
+        sphere.upSphere.scalar = tempScalar * sphere.upSphere.restitution;
+      }
+    } else if (
+      isSameVectors(sphere.direction, [0, 1, 0]) &&
+      sphere.upSphere == null
+    ) {
+      if (newPosition[1] >= TOP - SPHERERADIUS) {
+        newPosition[1] = TOP - SPHERERADIUS * 2;
+        sphere.direction = DOWN;
+        sphere.scalar *= sphere.restitution;
       }
     }
 
@@ -219,9 +238,21 @@ export default class PhysicalEngine {
         let tempDirection = sphere.direction;
         let tempScalar = sphere.scalar;
         sphere.direction = sphere.downSphere.direction;
-        sphere.scalar = sphere.downSphere.scalar;
+        sphere.scalar = sphere.downSphere.scalar * sphere.restitution;
         sphere.downSphere.direction = tempDirection;
-        sphere.downSphere.scalar = tempScalar;
+        sphere.downSphere.scalar = tempScalar * sphere.downSphere.restitution;
+        sphere.gravitySpeed = 0;
+      }
+    } else if (
+      isSameVectors(sphere.direction, [0, -1, 0]) &&
+      sphere.downSphere == null
+    ) {
+      if (newPosition[1] <= BOTTOM + SPHERERADIUS) {
+        // console.log("test2");
+        newPosition[1] = BOTTOM + SPHERERADIUS * 2;
+        sphere.direction = UP;
+        sphere.scalar *= sphere.restitution;
+        sphere.gravitySpeed = 0;
       }
     }
   }
