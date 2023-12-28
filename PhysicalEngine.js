@@ -14,27 +14,70 @@ export default class PhysicalEngine {
     sphere.gravitySpeed += 9.8 * FRAMERATE;
   }
 
-  checkBoundaryHit_LeftRight(sphere, sphereRadius) {
-    let sphereX = sphere.position[0];
-    let tempPosition1;
-    let tempPosition2;
-
-    if (Math.abs(sphereX - LEFT) <= sphereRadius) {
-      tempPosition1 = [0, 1, 0];
-      tempPosition2 = [0, 0, 1];
-    } else if (Math.abs(sphereX - RIGHT) <= sphereRadius) {
-      tempPosition1 = [0, 1, 0];
-      tempPosition2 = [0, 0, -1];
+  checkBoundaryHit_FrontBack(sphere) {
+    if (sphere.state == SOLID) {
+      return;
+    }
+    let sphereZ = sphere.position[2];
+    let normalVector;
+    if (sphereZ - SPHERERADIUS < FRONT) {
+      normalVector = [0, 0, 1];
+      sphere.position[2] = FRONT + SPHERERADIUS * 1.001;
+      this.setPosition(sphere);
+    } else if (sphereZ + SPHERERADIUS > BACK) {
+      normalVector = [0, 0, -1];
+      sphere.position[2] = BACK - SPHERERADIUS * 1.001;
+      this.setPosition(sphere);
     } else {
       return;
     }
 
     let sphereVelocity = multiplyVectorByScalar(
-      sphere.remainScalar,
+      sphere.scalar,
+      sphere.direction
+    );
+    let projectionScalar = dot(
+      multiplyVectorByScalar(-1, sphereVelocity),
+      normalVector
+    );
+    let projectedNormalVector = multiplyVectorByScalar(
+      projectionScalar,
+      normalVector
+    );
+    //최종 반사 벡터
+    let directionVector = addVectors(
+      multiplyVectorByScalar(2, projectedNormalVector),
+      sphereVelocity
+    );
+    sphere.scalar = Math.abs(getScalarFromVector(directionVector));
+    sphere.direction = normalize(directionVector);
+    this.setPosition(sphere);
+  }
+
+  checkBoundaryHit_LeftRight(sphere) {
+    if (sphere.state == SOLID) {
+      return;
+    }
+
+    let sphereX = sphere.position[0];
+    let normalVector;
+    if (sphereX - SPHERERADIUS < LEFT) {
+      normalVector = [1, 0, 0];
+      sphere.position[0] = LEFT + SPHERERADIUS * 1.001;
+      this.setPosition(sphere);
+    } else if (sphereX + SPHERERADIUS > RIGHT) {
+      normalVector = [-1, 0, 0];
+      sphere.position[0] = RIGHT - SPHERERADIUS * 1.001;
+      this.setPosition(sphere);
+    } else {
+      return;
+    }
+
+    let sphereVelocity = multiplyVectorByScalar(
+      sphere.scalar,
       sphere.direction
     );
 
-    let normalVector = normalize(cross(tempPosition1, tempPosition2));
     let projectionScalar = dot(
       multiplyVectorByScalar(-1, sphereVelocity),
       normalVector
@@ -51,14 +94,14 @@ export default class PhysicalEngine {
       sphereVelocity
     );
 
-    sphere.remainScalar =
-      getScalarFromVector(directionVector) * sphere.restitution;
-    sphere.scalarPerFrame = sphere.remainScalar * FRAMERATE;
+    sphere.scalar = Math.abs(getScalarFromVector(directionVector));
     sphere.direction = normalize(directionVector);
+
+    this.setPosition(sphere);
   }
 
   checkBoundaryHit_TopBottom(sphere) {
-    if (sphere.state == SOLID || sphere.state == FLOWING_LIQUID) {
+    if (sphere.state == SOLID) {
       return;
     }
 
@@ -142,6 +185,7 @@ export default class PhysicalEngine {
     if (sphere1.state == SOLID && sphere2.state == SOLID) {
       return;
     }
+
     let offset = 0;
     let tempVector = subtractVectors(sphere1.position, sphere2.position);
     let gap = Math.abs(getScalarFromVector(tempVector));
@@ -236,10 +280,21 @@ export default class PhysicalEngine {
         newPosition[1] = sphere.downSphere.position[1] + SPHERERADIUS * 2;
         let tempDirection = sphere.direction;
         let tempScalar = sphere.scalar;
-        sphere.direction = sphere.downSphere.direction;
-        sphere.scalar = sphere.downSphere.scalar * sphere.restitution;
-        sphere.downSphere.direction = tempDirection;
-        sphere.downSphere.scalar = tempScalar * sphere.downSphere.restitution;
+
+        if (sphere.downSphere.scalar < SPHERERADIUS) {
+          // 밑에 깔린 애가 거의 움직이지 않을 때
+          // 이 것에 빨려 들어가는 느낌 없애기 위해 강제로 위로 튀어 올라가게 수정
+          sphere.direction = UP;
+          sphere.scalar *= sphere.restitution;
+          sphere.downSphere.direction = UP;
+          sphere.downSphere.scalar = tempScalar * sphere.downSphere.restitution;
+        } else {
+          sphere.direction = sphere.downSphere.direction;
+          sphere.scalar = sphere.downSphere.scalar * sphere.restitution;
+          sphere.downSphere.direction = tempDirection;
+          sphere.downSphere.scalar = tempScalar * sphere.downSphere.restitution;
+        }
+
         sphere.gravitySpeed = 0;
       }
     } else if (

@@ -14,5 +14,7 @@ let DOWN = [0, -1, 0];
 
 const TOP = 1500;
 const BOTTOM = 400;
-const LEFT = 300;
-const RIGHT = -800;
+const LEFT = -2000;
+const RIGHT = 400;
+const FRONT = -700;
+const BACK = 2000;

@@ -105,9 +105,14 @@ export default class SphereController {
 
     spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
-        if (sphere.state == LIQUID && sphere.bottomCount > SECOND * FRAMERATE) {
-          sphere.state = FLOWING_LIQUID;
-
+        if (
+          sphere.position[1] < BOTTOM + SPHERERADIUS * 3 &&
+          sphere.bottomCount > 15 &&
+          sphere.scalar <= SPHERERADIUS
+        ) {
+          if (sphere.state != FLOWING_LIQUID) {
+            sphere.state = FLOWING_LIQUID;
+          }
           let direction = normalize([
             Math.random() * 2 - 1,
             0,
@@ -115,8 +120,8 @@ export default class SphereController {
           ]);
 
           sphere.direction = direction;
-          sphere.scalar = SPHERERADIUS * 100;
-          physicalE.setPosition(sphere);
+          sphere.scalar = SPHERERADIUS * 10;
+          physicalE.setPosition2(sphere);
         }
       });
     });
@@ -125,12 +130,16 @@ export default class SphereController {
   collisionSpheres() {
     spheres.forEach((sphereArray1) => {
       sphereArray1.forEach((sphere1) => {
-        sphereArray1.forEach((sphere2) => {
-          if (sphere1 != sphere2) {
-            physicalE.checkElasticCollision(sphere1, sphere2);
-          }
-        });
+        if (sphere1.state != FLOWING_LIQUID) {
+          sphereArray1.forEach((sphere2) => {
+            if (sphere1 != sphere2) {
+              physicalE.checkElasticCollision(sphere1, sphere2);
+            }
+          });
+        }
         physicalE.checkBoundaryHit_TopBottom(sphere1);
+        physicalE.checkBoundaryHit_LeftRight(sphere1);
+        physicalE.checkBoundaryHit_FrontBack(sphere1);
       });
     });
   }
@@ -151,7 +160,7 @@ export default class SphereController {
       sphereArray.forEach((sphere) => {
         physicalE.gravity(sphere);
 
-        if (sphere.position[1] < BOTTOM + SPHERERADIUS * 3) {
+        if (sphere.position[1] < BOTTOM + SPHERERADIUS * 10) {
           sphere.bottomCount++;
         }
         shader.drawScene(sphere.position, sphere.color);
