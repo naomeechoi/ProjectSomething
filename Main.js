@@ -7,11 +7,24 @@ window.onload = function () {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
+  let isAdded = false;
   addEventListener("wheel", (event) => {
     wheel++;
 
     sphereController.startMoveSpheres(wheel);
     sphereController.startVerticalMove(wheel);
+
+    if (wheel > 70) {
+      sphereController.fastVerticalMove();
+    }
+
+    if (wheel > 90) {
+      sphereController.randomMove();
+    }
+
+    if (wheel > 110) {
+      sphereController.finalSecene();
+    }
     // draw();
   });
 

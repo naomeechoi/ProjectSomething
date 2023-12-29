@@ -145,7 +145,7 @@ export default class SphereShader {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
-  drawScene(position, color) {
+  drawScene(position, color, scale) {
     const viewMatrix = m4.inverse(cameraMatrix);
     let mat = m4.multiply(perspectiveProjectionMatirx, viewMatrix);
 
@@ -155,6 +155,8 @@ export default class SphereShader {
       position[1],
       position[2]
     );
+
+    tempMat = m4.scale(tempMat, scale[0], scale[1], scale[2]);
 
     mat = m4.multiply(mat, tempMat);
     gl.useProgram(vertexColorProgramInfo.program);

@@ -1,8 +1,10 @@
 export default class Sphere {
-  constructor(_position, _color, _state) {
+  constructor(_position, _color, _scale, _state) {
     this.position = _position;
     this.color = _color;
+    this.scale = _scale;
     this.state = _state;
+    this.orginalPos = _position;
 
     this.yLevel = _position[1];
     this.zLevel = _position[2] / 5;
@@ -19,6 +21,21 @@ export default class Sphere {
     this.downSphere = null;
 
     this.bottomCount = 0;
+
+    this.isSetRandom = false;
+
+    this.isGoingToOriginPos = false;
+  }
+
+  setRestitution() {
+    if (this.isSetRandom && this.state != FINAL) {
+      this.restitution = 1;
+      this.state = GAS;
+    }
+  }
+
+  getScalrToOriginalPos() {
+    return getScalarFromVector(subtractVectors(this.position, this.orginalPos));
   }
 
   getFloor() {

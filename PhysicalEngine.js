@@ -7,6 +7,9 @@ export default class PhysicalEngine {
     if (sphere.state == SOLID) {
       return;
     }
+    if (sphere.state == FINAL) {
+      return;
+    }
     if (sphere.position[1] < BOTTOM) {
       return;
     }
@@ -18,6 +21,11 @@ export default class PhysicalEngine {
     if (sphere.state == SOLID) {
       return;
     }
+
+    if (sphere.state == FINAL) {
+      return;
+    }
+
     let sphereZ = sphere.position[2];
     let normalVector;
     if (sphereZ - SPHERERADIUS < FRONT) {
@@ -56,6 +64,10 @@ export default class PhysicalEngine {
 
   checkBoundaryHit_LeftRight(sphere) {
     if (sphere.state == SOLID) {
+      return;
+    }
+
+    if (sphere.state == FINAL) {
       return;
     }
 
@@ -102,6 +114,10 @@ export default class PhysicalEngine {
 
   checkBoundaryHit_TopBottom(sphere) {
     if (sphere.state == SOLID) {
+      return;
+    }
+
+    if (sphere.state == FINAL) {
       return;
     }
 
@@ -186,6 +202,10 @@ export default class PhysicalEngine {
       return;
     }
 
+    if (sphere1.state == FINAL && sphere2.state == FINAL) {
+      return;
+    }
+
     let offset = 0;
     let tempVector = subtractVectors(sphere1.position, sphere2.position);
     let gap = Math.abs(getScalarFromVector(tempVector));
@@ -231,15 +251,24 @@ export default class PhysicalEngine {
       sphere.position,
       multiplyVectorByScalar(sphere.scalar * FRAMERATE, sphere.direction)
     );
-    if (sphere.state != FLOWING_LIQUID) {
+    if (sphere.state != FLOWING_LIQUID && sphere.state != GAS) {
       newPosition[1] -= sphere.gravitySpeed;
       this.checkCollisionBeforeMove(sphere, newPosition);
     }
     sphere.position = newPosition;
+
+    if (sphere.state == GAS && sphere.getScalrToOriginalPos() < 10) {
+      sphere.position = sphere.orginalPos;
+      sphere.direction = [0, 0, 0];
+      sphere.scalar = 0;
+    }
   }
 
   checkCollisionBeforeMove(sphere, newPosition) {
     if (sphere.state == FLOWING_LIQUID) {
+      return;
+    }
+    if (sphere.state == FINAL) {
       return;
     }
 
@@ -309,54 +338,4 @@ export default class PhysicalEngine {
       }
     }
   }
-}
-
-function isSameVectors(a, b) {
-  if (a[0] == b[0] && a[1] == b[1] && a[2] == b[2]) {
-    return true;
-  }
-
-  return false;
-}
-
-function addVectors(a, b) {
-  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-}
-
-function subtractVectors(a, b) {
-  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-}
-
-function multiplyVectorByScalar(scalar, vector) {
-  return [scalar * vector[0], scalar * vector[1], scalar * vector[2]];
-}
-
-function divideVectorByScalar(scalar, vector) {
-  return [vector[0] / scalar, vector[1] / scalar, vector[2] / scalar];
-}
-
-function dot(a, b) {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-}
-
-function getScalarFromVector(v) {
-  return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-}
-
-function normalize(v) {
-  var length = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-  // make sure we don't divide by 0.
-  if (length > 0.00001) {
-    return [v[0] / length, v[1] / length, v[2] / length];
-  } else {
-    return [0, 0, 0];
-  }
-}
-
-function cross(a, b) {
-  return [
-    a[1] * b[2] - a[2] * b[1],
-    a[2] * b[0] - a[0] * b[2],
-    a[0] * b[1] - a[1] * b[0],
-  ];
 }

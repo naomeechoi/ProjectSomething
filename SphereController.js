@@ -43,7 +43,7 @@ export default class SphereController {
             tempColor[2] - (positions[2] / 5) * variation,
             1,
           ];
-          tempArray.push(new Sphere(positions, color, SOLID));
+          tempArray.push(new Sphere(positions, color, [1, 1, 1], SOLID));
         });
         spheres.push(tempArray);
 
@@ -63,7 +63,7 @@ export default class SphereController {
               1,
             ];
 
-            tempBigArray.push(new Sphere(tempArray, color, SOLID));
+            tempBigArray.push(new Sphere(tempArray, color, [1, 1, 1], SOLID));
           });
           spheres.push(tempBigArray);
         }
@@ -120,8 +120,52 @@ export default class SphereController {
           ]);
 
           sphere.direction = direction;
-          sphere.scalar = SPHERERADIUS * 10;
+          sphere.scalar = SPHERERADIUS + 1;
           physicalE.setPosition2(sphere);
+        }
+      });
+    });
+  }
+
+  fastVerticalMove() {
+    spheres.forEach((sphereArray) => {
+      sphereArray.forEach((sphere) => {
+        if (sphere.direction[1] == 0)
+          sphere.scalar = sphere.scalar + SPHERERADIUS;
+      });
+    });
+  }
+
+  randomMove() {
+    spheres.forEach((sphereArray) => {
+      sphereArray.forEach((sphere) => {
+        if (sphere.isSetRandom == false) {
+          let direction = normalize([
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1,
+          ]);
+          sphere.scalar = 1000;
+          sphere.direction = direction;
+          physicalE.setPosition2(sphere);
+          sphere.isSetRandom = true;
+          sphere.setRestitution();
+        }
+      });
+    });
+  }
+
+  finalSecene() {
+    spheres.forEach((sphereArray) => {
+      sphereArray.forEach((sphere) => {
+        if (sphere.state == GAS && sphere.isGoingToOriginPos == false) {
+          sphere.isGoingToOriginPos = true;
+          sphere.direction = normalize(
+            subtractVectors(sphere.orginalPos, sphere.position)
+          );
+
+          // console.log(sphere.direction);
+          //sphere.scalar = 100;
         }
       });
     });
@@ -163,7 +207,8 @@ export default class SphereController {
         if (sphere.position[1] < BOTTOM + SPHERERADIUS * 10) {
           sphere.bottomCount++;
         }
-        shader.drawScene(sphere.position, sphere.color);
+
+        shader.drawScene(sphere.position, sphere.color, sphere.scale);
       });
     });
   }
@@ -710,4 +755,8 @@ function normalize(v) {
   } else {
     return [0, 0, 0];
   }
+}
+
+function subtractVectors(a, b) {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 }
