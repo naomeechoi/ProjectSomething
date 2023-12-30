@@ -12,17 +12,22 @@ window.onload = function () {
     wheel++;
 
     sphereController.startMoveSpheres(wheel);
-    sphereController.startVerticalMove(wheel);
 
-    if (wheel > 70) {
+    let criticalPoint = 70 / MOUSE_CONTROLL_SPEED;
+
+    if (wheel > criticalPoint / 2) {
+      sphereController.startVerticalMove();
+    }
+
+    if (wheel > criticalPoint) {
       sphereController.fastVerticalMove();
     }
 
-    if (wheel > 90) {
+    if (wheel > criticalPoint * 3) {
       sphereController.randomMove();
     }
 
-    if (wheel > 110) {
+    if (wheel > criticalPoint * 5) {
       sphereController.finalSecene();
     }
     // draw();

@@ -98,11 +98,7 @@ export default class SphereController {
     });
   }
 
-  startVerticalMove(wheel) {
-    if (wheel < 60) {
-      return;
-    }
-
+  startVerticalMove() {
     spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
         if (
