@@ -37,7 +37,7 @@ export default class SphereShader {
     }
   }
 
-  setSphereBufferInro() {
+  setSphereBufferInfo() {
     let vertices = [];
 
     var radius = 5;

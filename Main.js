@@ -13,7 +13,7 @@ window.onload = function () {
 
     sphereController.startMoveSpheres(wheel);
 
-    let criticalPoint = 70 / MOUSE_CONTROLL_SPEED;
+    let criticalPoint = 200 / MOUSE_CONTROLL_SPEED;
 
     if (wheel > criticalPoint / 2) {
       sphereController.startVerticalMove();

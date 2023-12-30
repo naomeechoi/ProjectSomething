@@ -2,14 +2,19 @@
 import SphereShader from "./SphereShader.js";
 import Sphere from "./Sphere.js";
 import PhysicalEngine from "./PhysicalEngine.js";
-let shader = new SphereShader();
-let physicalE = new PhysicalEngine();
-let spheres = [];
-let wordArrays = [];
 
 export default class SphereController {
   constructor() {
-    shader.setSphereBufferInro();
+    this.shader = new SphereShader();
+    this.physicalEngine = new PhysicalEngine();
+    this.spheres = [];
+
+    this.shader.setSphereBufferInfo();
+    this.addSpheres();
+    this.setSlide();
+  }
+
+  addSpheres() {
     let arrays = [];
     arrays.push(word_1);
     arrays.push(word_2);
@@ -33,8 +38,6 @@ export default class SphereController {
         1,
       ];
       array.forEach((element) => {
-        wordArrays.push(element);
-
         let tempArray = [];
         element.forEach((positions) => {
           let color = [
@@ -45,7 +48,7 @@ export default class SphereController {
           ];
           tempArray.push(new Sphere(positions, color, [1, 1, 1], SOLID));
         });
-        spheres.push(tempArray);
+        this.spheres.push(tempArray);
 
         for (let i = 1; i < 5; i++) {
           let tempBigArray = [];
@@ -65,12 +68,12 @@ export default class SphereController {
 
             tempBigArray.push(new Sphere(tempArray, color, [1, 1, 1], SOLID));
           });
-          spheres.push(tempBigArray);
+          this.spheres.push(tempBigArray);
         }
       });
     });
 
-    spheres.forEach((array) => {
+    this.spheres.forEach((array) => {
       for (var i = 0; i < array.length; i++) {
         if (i > 0) {
           array[i].upSphere = array[i - 1];
@@ -81,25 +84,23 @@ export default class SphereController {
         }
       }
     });
-
-    this.setSlide();
   }
 
   startMoveSpheres(wheel) {
-    spheres.forEach((sphereArray) => {
+    this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
         if (sphere.state == SOLID && wheel >= sphere.getFloor()) {
           sphere.state = LIQUID;
           sphere.direction = DOWN;
           sphere.scalar = (sphere.position[1] - BOTTOM) * 9.8 * sphere.mass;
-          physicalE.setPosition2(sphere);
+          this.physicalEngine.setPosition2(sphere);
         }
       });
     });
   }
 
   startVerticalMove() {
-    spheres.forEach((sphereArray) => {
+    this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
         if (
           sphere.position[1] < BOTTOM + SPHERERADIUS * 3 &&
@@ -117,14 +118,14 @@ export default class SphereController {
 
           sphere.direction = direction;
           sphere.scalar = SPHERERADIUS + 1;
-          physicalE.setPosition2(sphere);
+          this.physicalEngine.setPosition2(sphere);
         }
       });
     });
   }
 
   fastVerticalMove() {
-    spheres.forEach((sphereArray) => {
+    this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
         if (sphere.direction[1] == 0)
           sphere.scalar = sphere.scalar + SPHERERADIUS;
@@ -133,7 +134,7 @@ export default class SphereController {
   }
 
   randomMove() {
-    spheres.forEach((sphereArray) => {
+    this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
         if (sphere.isSetRandom == false) {
           let direction = normalize([
@@ -143,7 +144,7 @@ export default class SphereController {
           ]);
           sphere.scalar = 1000;
           sphere.direction = direction;
-          physicalE.setPosition2(sphere);
+          this.physicalEngine.setPosition2(sphere);
           sphere.isSetRandom = true;
           sphere.setRestitution();
         }
@@ -152,7 +153,7 @@ export default class SphereController {
   }
 
   finalSecene() {
-    spheres.forEach((sphereArray) => {
+    this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
         if (sphere.state == GAS && sphere.isGoingToOriginPos == false) {
           sphere.isGoingToOriginPos = true;
@@ -168,49 +169,49 @@ export default class SphereController {
   }
 
   collisionSpheres() {
-    spheres.forEach((sphereArray1) => {
+    this.spheres.forEach((sphereArray1) => {
       sphereArray1.forEach((sphere1) => {
         if (sphere1.state != FLOWING_LIQUID) {
           sphereArray1.forEach((sphere2) => {
             if (sphere1 != sphere2) {
-              physicalE.checkElasticCollision(sphere1, sphere2);
+              this.physicalEngine.checkElasticCollision(sphere1, sphere2);
             }
           });
         }
-        physicalE.checkBoundaryHit_TopBottom(sphere1);
-        physicalE.checkBoundaryHit_LeftRight(sphere1);
-        physicalE.checkBoundaryHit_FrontBack(sphere1);
+        this.physicalEngine.checkBoundaryHit_TopBottom(sphere1);
+        this.physicalEngine.checkBoundaryHit_LeftRight(sphere1);
+        this.physicalEngine.checkBoundaryHit_FrontBack(sphere1);
       });
     });
   }
 
   moveSpheres() {
-    spheres.forEach((sphereArray1) => {
+    this.spheres.forEach((sphereArray1) => {
       sphereArray1.forEach((sphere1) => {
         //충돌과 별개로 위치 셋팅
-        physicalE.setPosition2(sphere1);
+        this.physicalEngine.setPosition2(sphere1);
       });
     });
   }
 
   drawScene() {
-    shader.beforeDraw();
+    this.shader.beforeDraw();
 
-    spheres.forEach((sphereArray) => {
+    this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
-        physicalE.gravity(sphere);
+        this.physicalEngine.gravity(sphere);
 
         if (sphere.position[1] < BOTTOM + SPHERERADIUS * 10) {
           sphere.bottomCount++;
         }
 
-        shader.drawScene(sphere.position, sphere.color, sphere.scale);
+        this.shader.drawScene(sphere.position, sphere.color, sphere.scale);
       });
     });
   }
 
   setSlide() {
-    shader.slideSettings = {
+    this.shader.slideSettings = {
       rotation: 0, // in degrees
       cam1FieldOfView: 112, // in degrees
       cam1PosX: 16,
@@ -223,7 +224,7 @@ export default class SphereController {
     };
     webglLessonsUI.setupUI(
       document.querySelector("#ui"),
-      shader.slideSettings,
+      this.shader.slideSettings,
       [
         {
           type: "slider",
