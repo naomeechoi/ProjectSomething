@@ -124,7 +124,6 @@ export default class SphereController {
   moveSpheres() {
     this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
-        //충돌과 별개로 위치 셋팅
         this.physicalEngine.setPositionWithGravity(sphere);
       });
     });

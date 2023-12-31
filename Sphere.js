@@ -70,10 +70,13 @@ export default class Sphere {
   }
 
   backToOriginalPos() {
-    if (this.state == FINAL && this.getDistanceFromOriginalPos() < 10) {
+    if (this.state == FINAL && this.getDistanceFromOriginalPos() < 100) {
       this.position = this.orginalPos;
       this.direction = [0, 0, 0];
       this.scalar = 0;
+      this.gravitySpeed = 0;
+      this.restitution = 0.7;
+      //this.state = SOLID;
     }
   }
 
