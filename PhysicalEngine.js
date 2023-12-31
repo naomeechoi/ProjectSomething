@@ -36,19 +36,23 @@ export default class PhysicalEngine {
       sphere.scalar,
       sphere.direction
     );
+
     let projectionScalar = dot(
       multiplyVectorByScalar(-1, sphereVelocity),
       normalVector
     );
+
     let projectedNormalVector = multiplyVectorByScalar(
       projectionScalar,
       normalVector
     );
+
     //최종 반사 벡터
     let directionVector = addVectors(
       multiplyVectorByScalar(2, projectedNormalVector),
       sphereVelocity
     );
+
     sphere.scalar = Math.abs(getScalarFromVector(directionVector));
     sphere.direction = normalize(directionVector);
     this.setPosition(sphere);
@@ -150,32 +154,6 @@ export default class PhysicalEngine {
 
     sphere.direction = normalize(directionVector);
     this.setPosition(sphere);
-  }
-
-  checkHitWithSolidSphere(sphere, solidSphere) {
-    let sphereVelocity = multiplyVectorByScalar(
-      sphere.scalar,
-      sphere.direction
-    );
-
-    let normalVector = normalize(subtractVectors(solidSphere, sphere));
-    let projectionScalar = dot(
-      multiplyVectorByScalar(-1, sphereVelocity),
-      normalVector
-    );
-    let projectedNormalVector = multiplyVectorByScalar(
-      projectionScalar,
-      normalVector
-    );
-    //최종 반사 벡터
-    let directionVector = addVectors(
-      multiplyVectorByScalar(2, projectedNormalVector),
-      sphereVelocity
-    );
-    sphere.scalar = Math.abs(
-      getScalarFromVector(directionVector) * sphere.restitution
-    );
-    sphere.direction = normalize(directionVector);
   }
 
   checkElasticCollision(sphere1, sphere2) {
