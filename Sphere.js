@@ -17,7 +17,6 @@ export default class Sphere {
   }
 
   changeState(wheel) {
-    let criticalPoint = 200 / MOUSE_CONTROLL_SPEED;
     if (this.state == SOLID) {
       if (this.getFloor() <= wheel) {
         this.state = LIQUID;
@@ -27,7 +26,7 @@ export default class Sphere {
         return true;
       }
     } else if (this.state == LIQUID) {
-      if (wheel > criticalPoint / 2)
+      if (wheel > CRITICAL_POINT / 2)
         if (
           this.position[1] < BOTTOM + SPHERERADIUS * 3 &&
           this.scalar * this.direction[1] < 0.0001
@@ -41,7 +40,7 @@ export default class Sphere {
 
       return true;
     } else if (this.state == FLOWING_LIQUID) {
-      if (wheel > criticalPoint * 3) {
+      if (wheel > CRITICAL_POINT * 3) {
         this.state = GAS;
         this.restitution = 1;
         this.scalar = 1000;
@@ -49,7 +48,7 @@ export default class Sphere {
       }
       return true;
     } else if (this.state == GAS) {
-      if (wheel > criticalPoint * 5) {
+      if (wheel > CRITICAL_POINT * 5) {
         this.state = FINAL;
         this.direction = normalize(
           subtractVectors(this.orginalPos, this.position)
@@ -62,7 +61,15 @@ export default class Sphere {
     return false;
   }
 
-  getScalrToOriginalPos() {
+  upSpeed(wheel) {
+    if (this.state == FLOWING_LIQUID || this.state == GAS) {
+      if (wheel > CRITICAL_POINT) {
+        this.scalar = this.scalar + SPHERERADIUS;
+      }
+    }
+  }
+
+  getDistanceFromOriginalPos() {
     return getScalarFromVector(subtractVectors(this.position, this.orginalPos));
   }
 

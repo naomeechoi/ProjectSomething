@@ -96,11 +96,10 @@ export default class SphereController {
     });
   }
 
-  fastVerticalMove() {
+  upSpheresSpeed(wheel) {
     this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
-        if (sphere.direction[1] == 0)
-          sphere.scalar = sphere.scalar + SPHERERADIUS;
+        sphere.upSpeed(wheel);
       });
     });
   }

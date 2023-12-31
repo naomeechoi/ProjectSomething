@@ -7,30 +7,11 @@ window.onload = function () {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  let isAdded = false;
   addEventListener("wheel", (event) => {
     wheel++;
 
     sphereController.changeSpheresState(wheel);
-
-    /*
-    let criticalPoint = 200 / MOUSE_CONTROLL_SPEED;
-
-    if (wheel > criticalPoint / 2) {
-      sphereController.startVerticalMove();
-    }
-
-    if (wheel > criticalPoint) {
-      sphereController.fastVerticalMove();
-    }
-
-    if (wheel > criticalPoint * 3) {
-      sphereController.randomMove();
-    }
-
-    if (wheel > criticalPoint * 5) {
-      sphereController.finalSecene();
-    }*/
+    sphereController.upSpheresSpeed(wheel);
     draw();
   });
 

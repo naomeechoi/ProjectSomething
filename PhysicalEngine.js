@@ -255,7 +255,7 @@ export default class PhysicalEngine {
     }
     sphere.position = newPosition;
 
-    if (sphere.state == FINAL && sphere.getScalrToOriginalPos() < 10) {
+    if (sphere.state == FINAL && sphere.getDistanceFromOriginalPos() < 10) {
       sphere.position = sphere.orginalPos;
       sphere.direction = [0, 0, 0];
       sphere.scalar = 0;
