@@ -105,22 +105,6 @@ export default class SphereController {
     });
   }
 
-  finalSecene() {
-    this.spheres.forEach((sphereArray) => {
-      sphereArray.forEach((sphere) => {
-        if (sphere.state == GAS && sphere.isGoingToOriginPos == false) {
-          sphere.isGoingToOriginPos = true;
-          sphere.direction = normalize(
-            subtractVectors(sphere.orginalPos, sphere.position)
-          );
-
-          // console.log(sphere.direction);
-          //sphere.scalar = 100;
-        }
-      });
-    });
-  }
-
   collisionSpheres() {
     this.spheres.forEach((sphereArray1) => {
       sphereArray1.forEach((sphere1) => {
@@ -153,11 +137,6 @@ export default class SphereController {
     this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
         this.physicalEngine.gravity(sphere);
-
-        if (sphere.position[1] < BOTTOM + SPHERERADIUS * 10) {
-          sphere.bottomCount++;
-        }
-
         this.shader.drawScene(sphere.position, sphere.color, sphere.scale);
       });
     });

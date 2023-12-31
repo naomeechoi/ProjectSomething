@@ -1,5 +1,3 @@
-const SOLID = 0;
-
 export default class PhysicalEngine {
   constructor() {}
 
@@ -251,13 +249,13 @@ export default class PhysicalEngine {
       sphere.position,
       multiplyVectorByScalar(sphere.scalar * FRAMERATE, sphere.direction)
     );
-    if (sphere.state != FLOWING_LIQUID && sphere.state != GAS) {
+    if (sphere.state == LIQUID) {
       newPosition[1] -= sphere.gravitySpeed;
       this.checkCollisionBeforeMove(sphere, newPosition);
     }
     sphere.position = newPosition;
 
-    if (sphere.state == GAS && sphere.getScalrToOriginalPos() < 10) {
+    if (sphere.state == FINAL && sphere.getScalrToOriginalPos() < 10) {
       sphere.position = sphere.orginalPos;
       sphere.direction = [0, 0, 0];
       sphere.scalar = 0;

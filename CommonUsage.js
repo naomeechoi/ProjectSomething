@@ -65,11 +65,20 @@ function normalize(v) {
 }
 
 function getRandomDirection() {
-  return normalize([
+  let direction = normalize([
     Math.random() * 2 - 1,
     Math.random() * 2 - 1,
     Math.random() * 2 - 1,
   ]);
+
+  if (
+    Math.abs(direction[0]) < 0.00001 &&
+    Math.abs(direction[1]) < 0.00001 &&
+    Math.abs(direction[2]) < 0.00001
+  ) {
+    direction[0] = 0.001;
+  }
+  return direction;
 }
 
 function cross(a, b) {

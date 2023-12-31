@@ -14,12 +14,6 @@ export default class Sphere {
 
     this.upSphere = null;
     this.downSphere = null;
-
-    this.bottomCount = 0;
-
-    this.isSetRandom = false;
-
-    this.isGoingToOriginPos = false;
   }
 
   changeState(wheel) {
@@ -42,7 +36,7 @@ export default class Sphere {
 
           this.direction = getRandomDirection();
           this.direction[1] = 0;
-          this.scalar = SPHERERADIUS + 1;
+          this.scalar = SPHERERADIUS * 10;
         }
 
       return true;
@@ -53,6 +47,16 @@ export default class Sphere {
         this.scalar = 1000;
         this.direction = getRandomDirection();
       }
+      return true;
+    } else if (this.state == GAS) {
+      if (wheel > criticalPoint * 5) {
+        this.state = FINAL;
+        this.direction = normalize(
+          subtractVectors(this.orginalPos, this.position)
+        );
+        this.scalar = 1000;
+      }
+      return true;
     }
 
     return false;
