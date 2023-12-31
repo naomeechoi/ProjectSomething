@@ -105,25 +105,6 @@ export default class SphereController {
     });
   }
 
-  randomMove() {
-    this.spheres.forEach((sphereArray) => {
-      sphereArray.forEach((sphere) => {
-        if (sphere.isSetRandom == false) {
-          let direction = normalize([
-            Math.random() * 2 - 1,
-            Math.random() * 2 - 1,
-            Math.random() * 2 - 1,
-          ]);
-          sphere.scalar = 1000;
-          sphere.direction = direction;
-          this.physicalEngine.setPosition2(sphere);
-          sphere.isSetRandom = true;
-          sphere.setRestitution();
-        }
-      });
-    });
-  }
-
   finalSecene() {
     this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {

@@ -46,16 +46,16 @@ export default class Sphere {
         }
 
       return true;
+    } else if (this.state == FLOWING_LIQUID) {
+      if (wheel > criticalPoint * 3) {
+        this.state = GAS;
+        this.restitution = 1;
+        this.scalar = 1000;
+        this.direction = getRandomDirection();
+      }
     }
 
     return false;
-  }
-
-  setRestitution() {
-    if (this.isSetRandom && this.state != FINAL) {
-      this.restitution = 1;
-      this.state = GAS;
-    }
   }
 
   getScalrToOriginalPos() {
