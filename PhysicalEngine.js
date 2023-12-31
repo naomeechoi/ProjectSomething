@@ -173,7 +173,7 @@ export default class PhysicalEngine {
     }
 
     // 하나라도 끝나가는 경우 체크하지 않음
-    if (sphere1.state == FINAL && sphere2.state == FINAL) {
+    if (sphere1.state == FINAL || sphere2.state == FINAL) {
       return;
     }
 
