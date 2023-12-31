@@ -2,12 +2,10 @@ export default class PhysicalEngine {
   constructor() {}
 
   gravity(sphere) {
-    if (sphere.state == SOLID) {
+    if (sphere.state != LIQUID) {
       return;
     }
-    if (sphere.state == FINAL) {
-      return;
-    }
+
     if (sphere.position[1] < BOTTOM) {
       return;
     }
@@ -17,10 +15,6 @@ export default class PhysicalEngine {
 
   checkBoundaryHit_FrontBack(sphere) {
     if (sphere.state == SOLID) {
-      return;
-    }
-
-    if (sphere.state == FINAL) {
       return;
     }
 
@@ -62,10 +56,6 @@ export default class PhysicalEngine {
 
   checkBoundaryHit_LeftRight(sphere) {
     if (sphere.state == SOLID) {
-      return;
-    }
-
-    if (sphere.state == FINAL) {
       return;
     }
 
@@ -112,10 +102,6 @@ export default class PhysicalEngine {
 
   checkBoundaryHit_TopBottom(sphere) {
     if (sphere.state == SOLID) {
-      return;
-    }
-
-    if (sphere.state == FINAL) {
       return;
     }
 
