@@ -272,6 +272,17 @@ export default class PhysicalEngine {
       return;
     }
 
+    if (sphere.upSphere != null && sphere.upSphere.state == FLOWING_LIQUID) {
+      return;
+    }
+
+    if (
+      sphere.downSphere != null &&
+      sphere.downSphere.state == FLOWING_LIQUID
+    ) {
+      return;
+    }
+
     if (isSameVectors(sphere.direction, [0, 1, 0]) && sphere.upSphere != null) {
       if (newPosition[1] >= sphere.upSphere.position[1] - SPHERERADIUS) {
         newPosition[1] = sphere.upSphere.position[1] - SPHERERADIUS * 2;

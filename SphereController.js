@@ -86,33 +86,10 @@ export default class SphereController {
     });
   }
 
-  startMoveSpheres(wheel) {
+  changeSpheresState(wheel) {
     this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
-        if (sphere.state == SOLID && wheel >= sphere.getFloor()) {
-          sphere.state = LIQUID;
-          sphere.direction = DOWN;
-          sphere.scalar = (sphere.position[1] - BOTTOM) * 9.8 * sphere.mass;
-          this.physicalEngine.setPosition2(sphere);
-        }
-      });
-    });
-  }
-
-  startVerticalMove() {
-    this.spheres.forEach((sphereArray) => {
-      sphereArray.forEach((sphere) => {
-        if (
-          sphere.position[1] < BOTTOM + SPHERERADIUS * 3 &&
-          sphere.bottomCount > 15 &&
-          sphere.scalar <= SPHERERADIUS
-        ) {
-          if (sphere.state != FLOWING_LIQUID) {
-            sphere.state = FLOWING_LIQUID;
-          }
-          sphere.direction = getRandomDirection();
-          sphere.direction[1] = 0;
-          sphere.scalar = SPHERERADIUS + 1;
+        if (sphere.changeState(wheel)) {
           this.physicalEngine.setPosition2(sphere);
         }
       });

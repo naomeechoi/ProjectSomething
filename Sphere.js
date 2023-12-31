@@ -22,6 +22,35 @@ export default class Sphere {
     this.isGoingToOriginPos = false;
   }
 
+  changeState(wheel) {
+    let criticalPoint = 200 / MOUSE_CONTROLL_SPEED;
+    if (this.state == SOLID) {
+      if (this.getFloor() <= wheel) {
+        this.state = LIQUID;
+        this.direction = DOWN;
+        this.scalar = (this.position[1] - BOTTOM) * 9.8 * this.mass;
+
+        return true;
+      }
+    } else if (this.state == LIQUID) {
+      if (wheel > criticalPoint / 2)
+        if (
+          this.position[1] < BOTTOM + SPHERERADIUS * 3 &&
+          this.scalar * this.direction[1] < 0.0001
+        ) {
+          this.state = FLOWING_LIQUID;
+
+          this.direction = getRandomDirection();
+          this.direction[1] = 0;
+          this.scalar = SPHERERADIUS + 1;
+        }
+
+      return true;
+    }
+
+    return false;
+  }
+
   setRestitution() {
     if (this.isSetRandom && this.state != FINAL) {
       this.restitution = 1;

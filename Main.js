@@ -11,8 +11,9 @@ window.onload = function () {
   addEventListener("wheel", (event) => {
     wheel++;
 
-    sphereController.startMoveSpheres(wheel);
+    sphereController.changeSpheresState(wheel);
 
+    /*
     let criticalPoint = 200 / MOUSE_CONTROLL_SPEED;
 
     if (wheel > criticalPoint / 2) {
@@ -29,8 +30,8 @@ window.onload = function () {
 
     if (wheel > criticalPoint * 5) {
       sphereController.finalSecene();
-    }
-    // draw();
+    }*/
+    draw();
   });
 
   //1초에 60번이면 6000 1000 0.02
