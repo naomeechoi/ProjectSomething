@@ -90,7 +90,7 @@ export default class SphereController {
     this.spheres.forEach((sphereArray) => {
       sphereArray.forEach((sphere) => {
         if (sphere.changeState(wheel)) {
-          this.physicalEngine.setPosition2(sphere);
+          this.physicalEngine.setPositionWithoutGravity(sphere);
         }
       });
     });
@@ -110,7 +110,7 @@ export default class SphereController {
         if (sphere1.state != FLOWING_LIQUID) {
           sphereArray1.forEach((sphere2) => {
             if (sphere1 != sphere2) {
-              this.physicalEngine.checkElasticCollision(sphere1, sphere2);
+              this.physicalEngine.checkCollisionBetweenSphere(sphere1, sphere2);
             }
           });
         }
@@ -122,10 +122,10 @@ export default class SphereController {
   }
 
   moveSpheres() {
-    this.spheres.forEach((sphereArray1) => {
-      sphereArray1.forEach((sphere1) => {
+    this.spheres.forEach((sphereArray) => {
+      sphereArray.forEach((sphere) => {
         //충돌과 별개로 위치 셋팅
-        this.physicalEngine.setPosition2(sphere1);
+        this.physicalEngine.setPositionWithGravity(sphere);
       });
     });
   }

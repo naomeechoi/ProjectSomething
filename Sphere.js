@@ -69,6 +69,14 @@ export default class Sphere {
     }
   }
 
+  backToOriginalPos() {
+    if (this.state == FINAL && this.getDistanceFromOriginalPos() < 10) {
+      this.position = this.orginalPos;
+      this.direction = [0, 0, 0];
+      this.scalar = 0;
+    }
+  }
+
   getDistanceFromOriginalPos() {
     return getScalarFromVector(subtractVectors(this.position, this.orginalPos));
   }
