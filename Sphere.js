@@ -6,16 +6,11 @@ export default class Sphere {
     this.state = _state;
     this.orginalPos = _position;
 
-    this.yLevel = _position[1];
-    this.zLevel = _position[2] / 5;
-
     this.mass = 0.9;
     this.gravitySpeed = 0;
     this.direction = [0, 0, 0];
     this.scalar = 0;
     this.restitution = 0.7;
-
-    this.floor = this.getFloor();
 
     this.upSphere = null;
     this.downSphere = null;
@@ -40,42 +35,45 @@ export default class Sphere {
 
   getFloor() {
     let total;
-    if (this.zLevel == 1) {
+
+    let yLevel = this.orginalPos[1];
+    let zLevel = this.orginalPos[2] / 5;
+    if (zLevel == 1) {
       total = 0 / MOUSE_CONTROLL_SPEED;
-    } else if (this.zLevel == 3) {
+    } else if (zLevel == 3) {
       total = 12 / MOUSE_CONTROLL_SPEED;
-    } else if (this.zLevel == 5) {
+    } else if (zLevel == 5) {
       total = 24 / MOUSE_CONTROLL_SPEED;
-    } else if (this.zLevel == 7) {
+    } else if (zLevel == 7) {
       total = 36 / MOUSE_CONTROLL_SPEED;
-    } else if (this.zLevel == 9) {
+    } else if (zLevel == 9) {
       total = 48 / MOUSE_CONTROLL_SPEED;
     }
 
-    if (this.yLevel == 850) {
-      this.yLevel = 11 / MOUSE_CONTROLL_SPEED;
-    } else if (this.yLevel == 840) {
-      this.yLevel = 10 / MOUSE_CONTROLL_SPEED;
-    } else if (this.yLevel == 830) {
-      this.yLevel = 9 / MOUSE_CONTROLL_SPEED;
-    } else if (this.yLevel == 820) {
-      this.yLevel = 8 / MOUSE_CONTROLL_SPEED;
-    } else if (this.yLevel == 810) {
-      this.yLevel = 7 / MOUSE_CONTROLL_SPEED;
-    } else if (this.yLevel == 800) {
-      this.yLevel = 6 / MOUSE_CONTROLL_SPEED;
-    } else if (this.yLevel == 790) {
-      this.yLevel = 5 / MOUSE_CONTROLL_SPEED;
-    } else if (this.yLevel == 780) {
-      this.yLevel = 4 / MOUSE_CONTROLL_SPEED;
-    } else if (this.yLevel == 770) {
-      this.yLevel = 3 / MOUSE_CONTROLL_SPEED;
-    } else if (this.yLevel == 760) {
-      this.yLevel = 2 / MOUSE_CONTROLL_SPEED;
-    } else if (this.yLevel == 750) {
-      this.yLevel = 1 / MOUSE_CONTROLL_SPEED;
+    if (yLevel == 850) {
+      yLevel = 11 / MOUSE_CONTROLL_SPEED;
+    } else if (yLevel == 840) {
+      yLevel = 10 / MOUSE_CONTROLL_SPEED;
+    } else if (yLevel == 830) {
+      yLevel = 9 / MOUSE_CONTROLL_SPEED;
+    } else if (yLevel == 820) {
+      yLevel = 8 / MOUSE_CONTROLL_SPEED;
+    } else if (yLevel == 810) {
+      yLevel = 7 / MOUSE_CONTROLL_SPEED;
+    } else if (yLevel == 800) {
+      yLevel = 6 / MOUSE_CONTROLL_SPEED;
+    } else if (yLevel == 790) {
+      yLevel = 5 / MOUSE_CONTROLL_SPEED;
+    } else if (yLevel == 780) {
+      yLevel = 4 / MOUSE_CONTROLL_SPEED;
+    } else if (yLevel == 770) {
+      yLevel = 3 / MOUSE_CONTROLL_SPEED;
+    } else if (yLevel == 760) {
+      yLevel = 2 / MOUSE_CONTROLL_SPEED;
+    } else if (yLevel == 750) {
+      yLevel = 1 / MOUSE_CONTROLL_SPEED;
     }
 
-    return Math.round(total + this.yLevel);
+    return Math.round(total + yLevel);
   }
 }

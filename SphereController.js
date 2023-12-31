@@ -110,13 +110,8 @@ export default class SphereController {
           if (sphere.state != FLOWING_LIQUID) {
             sphere.state = FLOWING_LIQUID;
           }
-          let direction = normalize([
-            Math.random() * 2 - 1,
-            0,
-            Math.random() * 2 - 1,
-          ]);
-
-          sphere.direction = direction;
+          sphere.direction = getRandomDirection();
+          sphere.direction[1] = 0;
           sphere.scalar = SPHERERADIUS + 1;
           this.physicalEngine.setPosition2(sphere);
         }

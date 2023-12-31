@@ -64,6 +64,14 @@ function normalize(v) {
   }
 }
 
+function getRandomDirection() {
+  return normalize([
+    Math.random() * 2 - 1,
+    Math.random() * 2 - 1,
+    Math.random() * 2 - 1,
+  ]);
+}
+
 function cross(a, b) {
   return [
     a[1] * b[2] - a[2] * b[1],
