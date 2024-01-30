@@ -13,23 +13,51 @@ export default class PhysicalEngine {
     sphere.gravitySpeed += 9.8 * FRAMERATE;
   }
 
-  checkBoundaryHit_FrontBack(sphere) {
+  checkBoundaryHit(sphere, axis) {
     if (sphere.state == SOLID) {
       return;
     }
 
-    let sphereZ = sphere.position[2];
     let normalVector;
-    if (sphereZ - SPHERERADIUS < FRONT) {
-      normalVector = [0, 0, 1];
-      sphere.position[2] = FRONT + SPHERERADIUS * 1.001;
-      this.setPositionWithoutGravity(sphere);
-    } else if (sphereZ + SPHERERADIUS > BACK) {
-      normalVector = [0, 0, -1];
-      sphere.position[2] = BACK - SPHERERADIUS * 1.001;
-      this.setPositionWithoutGravity(sphere);
-    } else {
-      return;
+    if (axis == Z) {
+      if (sphere.position[2] - SPHERERADIUS < FRONT) {
+        normalVector = [0, 0, 1];
+        sphere.position[2] = FRONT + SPHERERADIUS * 1.001;
+        this.setPositionWithoutGravity(sphere);
+      } else if (sphere.position[2] + SPHERERADIUS > BACK) {
+        normalVector = [0, 0, -1];
+        sphere.position[2] = BACK - SPHERERADIUS * 1.001;
+        this.setPositionWithoutGravity(sphere);
+      } else {
+        return;
+      }
+    } else if (axis == X) {
+      if (sphere.position[0] - SPHERERADIUS < LEFT) {
+        normalVector = [1, 0, 0];
+        sphere.position[0] = LEFT + SPHERERADIUS * 1.001;
+        this.setPositionWithoutGravity(sphere);
+      } else if (sphere.position[0] + SPHERERADIUS > RIGHT) {
+        normalVector = [-1, 0, 0];
+        sphere.position[0] = RIGHT - SPHERERADIUS * 1.001;
+        this.setPositionWithoutGravity(sphere);
+      } else {
+        return;
+      }
+    } else if (axis == Y) {
+      if (sphere.position[1] - SPHERERADIUS < BOTTOM) {
+        normalVector = [0, 1, 0];
+        //밑에 갇히는 문제 해결하기 위해 충돌시 바로 위치 보정
+        sphere.position[1] = BOTTOM + SPHERERADIUS * 1.001;
+        this.setPositionWithoutGravity(sphere);
+        sphere.gravitySpeed = 0;
+      } else if (sphere.position[1] + SPHERERADIUS > TOP) {
+        normalVector = [0, -1, 0];
+        //위에 갇히는 문제 해결하기 위해 충돌시 바로 위치 보정
+        sphere.position[1] = TOP - SPHERERADIUS * 1.001;
+        this.setPositionWithoutGravity(sphere);
+      } else {
+        return;
+      }
     }
 
     let sphereVelocity = multiplyVectorByScalar(
@@ -53,104 +81,12 @@ export default class PhysicalEngine {
       sphereVelocity
     );
 
-    sphere.scalar = Math.abs(getScalarFromVector(directionVector));
-    sphere.direction = normalize(directionVector);
-    this.setPositionWithoutGravity(sphere);
-  }
-
-  checkBoundaryHit_LeftRight(sphere) {
-    if (sphere.state == SOLID) {
-      return;
-    }
-
-    let sphereX = sphere.position[0];
-    let normalVector;
-    if (sphereX - SPHERERADIUS < LEFT) {
-      normalVector = [1, 0, 0];
-      sphere.position[0] = LEFT + SPHERERADIUS * 1.001;
-      this.setPositionWithoutGravity(sphere);
-    } else if (sphereX + SPHERERADIUS > RIGHT) {
-      normalVector = [-1, 0, 0];
-      sphere.position[0] = RIGHT - SPHERERADIUS * 1.001;
-      this.setPositionWithoutGravity(sphere);
+    if (axis == Y) {
+      sphere.scalar =
+        Math.abs(getScalarFromVector(directionVector)) * sphere.restitution;
     } else {
-      return;
+      sphere.scalar = Math.abs(getScalarFromVector(directionVector));
     }
-
-    let sphereVelocity = multiplyVectorByScalar(
-      sphere.scalar,
-      sphere.direction
-    );
-
-    let projectionScalar = dot(
-      multiplyVectorByScalar(-1, sphereVelocity),
-      normalVector
-    );
-
-    let projectedNormalVector = multiplyVectorByScalar(
-      projectionScalar,
-      normalVector
-    );
-
-    //최종 반사 벡터
-    let directionVector = addVectors(
-      multiplyVectorByScalar(2, projectedNormalVector),
-      sphereVelocity
-    );
-
-    sphere.scalar = Math.abs(getScalarFromVector(directionVector));
-    sphere.direction = normalize(directionVector);
-
-    this.setPositionWithoutGravity(sphere);
-  }
-
-  checkBoundaryHit_TopBottom(sphere) {
-    if (sphere.state == SOLID) {
-      return;
-    }
-
-    let sphereY = sphere.position[1];
-    let normalVector;
-    if (sphereY - SPHERERADIUS < BOTTOM) {
-      normalVector = [0, 1, 0];
-
-      //밑에 갇히는 문제 해결하기 위해 충돌시 바로 위치 보정
-      sphere.position[1] = BOTTOM + SPHERERADIUS * 1.001;
-      this.setPositionWithoutGravity(sphere);
-      sphere.gravitySpeed = 0;
-    } else if (sphereY + SPHERERADIUS > TOP) {
-      normalVector = [0, -1, 0];
-
-      //위에 갇히는 문제 해결하기 위해 충돌시 바로 위치 보정
-      sphere.position[1] = TOP - SPHERERADIUS * 1.001;
-      this.setPositionWithoutGravity(sphere);
-    } else {
-      return;
-    }
-
-    let sphereVelocity = multiplyVectorByScalar(
-      sphere.scalar,
-      sphere.direction
-    );
-
-    let projectionScalar = dot(
-      multiplyVectorByScalar(-1, sphereVelocity),
-      normalVector
-    );
-
-    let projectedNormalVector = multiplyVectorByScalar(
-      projectionScalar,
-      normalVector
-    );
-
-    //최종 반사 벡터
-    let directionVector = addVectors(
-      multiplyVectorByScalar(2, projectedNormalVector),
-      sphereVelocity
-    );
-
-    sphere.scalar =
-      Math.abs(getScalarFromVector(directionVector)) * sphere.restitution;
 
     sphere.direction = normalize(directionVector);
     this.setPositionWithoutGravity(sphere);

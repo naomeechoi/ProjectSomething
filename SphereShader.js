@@ -5,8 +5,6 @@ var sphereBufferInfo = null;
 var perspectiveProjectionMatirx = null;
 var cameraMatrix = null;
 var worldMatrix = null;
-var cameraBufferInfo;
-var clipspaceCubeBufferInfo;
 
 export default class SphereShader {
   constructor() {
@@ -48,13 +46,12 @@ export default class SphereShader {
     var stackStep = Math.PI / stackCount;
     var sectorAngle, stackAngle;
     for (var i = 0; i <= stackCount; ++i) {
-      stackAngle = Math.PI / 2 - i * stackStep; // st
-      xy = radius * Math.cos(stackAngle); // r * cos(
-      z = radius * Math.sin(stackAngle); // r * sin(u
-      // add (sectorCount+1) vertices per stack
-      // first and last vertices have same position a
+      stackAngle = Math.PI / 2 - i * stackStep;
+      xy = radius * Math.cos(stackAngle);
+      z = radius * Math.sin(stackAngle);
+
       for (var j = 0; j <= sectorCount; ++j) {
-        sectorAngle = j * sectorStep; // starting fro
+        sectorAngle = j * sectorStep;
         // vertex position (x, y, z)
         x = xy * Math.cos(sectorAngle); // r * cos(u)
         y = xy * Math.sin(sectorAngle); // r * cos(u)
@@ -104,12 +101,9 @@ export default class SphereShader {
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
     gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
-    //gl.enable(gl.SCISSOR_TEST);
 
     const effectiveWidth = gl.canvas.clientWidth / 2;
     const aspect = effectiveWidth / gl.canvas.clientHeight;
-    const near = 1;
-    const far = 2000;
 
     perspectiveProjectionMatirx = this.slideSettings.cam1Ortho
       ? m4.orthographic(
