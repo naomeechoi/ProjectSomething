@@ -26,19 +26,18 @@ export default class Sphere {
         return true;
       }
     } else if (this.state == LIQUID) {
-      if (wheel > CRITICAL_POINT / 2)
+      if (wheel > CRITICAL_POINT / 2) {
         if (
           this.position[1] < BOTTOM + SPHERERADIUS * 3 &&
           this.scalar * this.direction[1] < 0.0001
         ) {
           this.state = FLOWING_LIQUID;
-
           this.direction = getRandomDirection();
           this.direction[1] = 0;
           this.scalar = SPHERERADIUS * 10;
+          return true;
         }
-
-      return true;
+      }
     } else if (this.state == FLOWING_LIQUID) {
       if (wheel > CRITICAL_POINT * 3) {
         this.state = GAS;

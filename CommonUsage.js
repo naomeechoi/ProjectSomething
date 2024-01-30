@@ -20,7 +20,7 @@ const RIGHT = 400;
 const FRONT = -700;
 const BACK = 2000;
 
-const MOUSE_CONTROLL_SPEED = 1;
+const MOUSE_CONTROLL_SPEED = 4;
 let CRITICAL_POINT = 200 / MOUSE_CONTROLL_SPEED;
 
 function isSameVectors(a, b) {
